@@ -4,7 +4,7 @@ Some games written in Jack
 
 ## List
 
-- [ ] Rubik's cube (by @younottoknow)
+- [ ] Magic cube(by @younottoknow)
 - [ ] Minesweeper (by @oToToT)
 - [ ] Snake (by @oToToT)
 
