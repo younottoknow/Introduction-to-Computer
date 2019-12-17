@@ -1,70 +1,32 @@
-class Main {
-	static Array arr;
+class Main{
+	static boolean unquit;
 	function void main(){
-		var int count;
-		var int tmp;
-		var int numofgenerate;
-		var int move;
-		var boolean flag;
-		let flag = true;
-		let arr = Memory.alloc(54);
-		let count = 0;
-		let tmp = 53;
-		let numofgenerate = 20;
-		do Output.printString("Press any key to start.");
-		while (Keyboard.keyPressed() = 0){
-			let count = count + 1;
-		}
-		while (tmp > 44){
-			let arr[tmp] = 6;
-			let tmp = tmp - 1;
-		}
-		while(tmp > 35){
-			let arr[tmp] = 5;
-			let tmp = tmp - 1; 
-		}
-		while(tmp > 26){
-			let arr[tmp] = 4;
-			let tmp = tmp - 1;
-		}
-		while(tmp > 17){
-			let arr[tmp] = 3;
-			let tmp = tmp - 1;
-		}
-		while(tmp > 8){
-			let arr[tmp] = 2;
-			let tmp = tmp - 1;
-		}
-		while(tmp > -1){
-			let arr[tmp] = 1;
-			let tmp = tmp - 1;
-		}
-		while(numofgenerate > 0){
-			let count = Main.random(count);
-			do Main.Move(count);
-			let numofgenerate = numofgenerate - 1;
-		}
-		while (flag){
-			let move = Keyboard.readChar();
-			if(move = 113){
-				let flag = false;
-			}
-			else {
-				let move = move - 97;
-				if((move > -1) & (move < 12)){
-					do Main.Move(move);
+		var int input;
+		let unquit = true;
+		while (unquit){
+			let input = 0;
+			do Output.moveCursor(10, 25);
+			do Output.printString("1 Magic Cube");
+			do Output.moveCursor(12, 25);
+			do Output.printString("2 Minesweeper");
+			do Output.moveCursor(14, 25);
+			do Output.printString("3 Snake");
+			do Output.moveCursor(16, 25);
+			do Output.printString("Press Q to Quit");
+			while(unquit){
+				let input = Keyboard.readChar();
+				if(input = 49){
+					//do Magic_Cube.main();
 				}
+				else { if (input = 50){
+					//do Minesweeper.main();
+			    } else { if (input = 51){
+					//do Snake.main();
+				} else { if (input = 81){
+					let unquit = false;
+				}}}}
 			}
 		}
-		return;
-	}
-	function int random(int seed){
-		var int x;
-		let x = 127 * seed + 217;
-		let x = x - (x / 293);
-		return x;
-	}
-	function void Move(int now){
 		return;
 	}
 }

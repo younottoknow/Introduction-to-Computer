@@ -1,7 +1,12 @@
 class Random{
-	function int random(int seed){
-		var int x;
-		let x = 257 * seed + 17;
-		return x;
+	static int seed;
+	function int random(){
+		let seed = 257 * seed + 17;
+		let seed = seed & 32767;
+		return seed;
+	}
+	function void srand(int s){
+		let seed = s;
+		return;
 	}
 }

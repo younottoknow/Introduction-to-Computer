@@ -11,6 +11,7 @@
 		let count = 0;
 		let tmp = 53;
 		let numofgenerate = 20;
+		do Output.moveCursor(12,25);
 		do Output.printString("Press any key to start.");
 		while (Keyboard.keyPressed() = 0){
 			let count = count + 1;
@@ -39,8 +40,9 @@
 			let arr[tmp] = 1;
 			let tmp = tmp - 1;
 		}
+		do Random.srand(count);
 		while(numofgenerate > 0){
-			let count = Random.random(count);
+			let count = Random.random();
 			do Magic_Cube.move(count);
 			let numofgenerate = numofgenerate - 1;
 		}
@@ -52,7 +54,7 @@
 			else {
 				let input = input - 97;
 				if((input > -1) & (input < 12)){
-					do Main.move(input);
+					do Magic_Cube.move(input);
 				}
 			}
 		}
