@@ -1,0 +1,70 @@
+class Main {
+	static Array arr;
+	function void main(){
+		var int count;
+		var int tmp;
+		var int numofgenerate;
+		var int move;
+		var boolean flag;
+		let flag = true;
+		let arr = Memory.alloc(54);
+		let count = 0;
+		let tmp = 53;
+		let numofgenerate = 20;
+		do Output.printString("Press any key to start.");
+		while (Keyboard.keyPressed() = 0){
+			let count = count + 1;
+		}
+		while (tmp > 44){
+			let arr[tmp] = 6;
+			let tmp = tmp - 1;
+		}
+		while(tmp > 35){
+			let arr[tmp] = 5;
+			let tmp = tmp - 1; 
+		}
+		while(tmp > 26){
+			let arr[tmp] = 4;
+			let tmp = tmp - 1;
+		}
+		while(tmp > 17){
+			let arr[tmp] = 3;
+			let tmp = tmp - 1;
+		}
+		while(tmp > 8){
+			let arr[tmp] = 2;
+			let tmp = tmp - 1;
+		}
+		while(tmp > -1){
+			let arr[tmp] = 1;
+			let tmp = tmp - 1;
+		}
+		while(numofgenerate > 0){
+			let count = Main.random(count);
+			do Main.Move(count);
+			let numofgenerate = numofgenerate - 1;
+		}
+		while (flag){
+			let move = Keyboard.readChar();
+			if(move = 113){
+				let flag = false;
+			}
+			else {
+				let move = move - 97;
+				if((move > -1) & (move < 12)){
+					do Main.Move(move);
+				}
+			}
+		}
+		return;
+	}
+	function int random(int seed){
+		var int x;
+		let x = 127 * seed + 217;
+		let x = x - (x / 293);
+		return x;
+	}
+	function void Move(int now){
+		return;
+	}
+}
