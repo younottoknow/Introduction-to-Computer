@@ -14,7 +14,7 @@ class Main{
 			do Output.moveCursor(16, 25);
 			do Output.printString("Press Q to Quit");
 			while(unquit){
-				let input = Keyboard.readChar();
+				let input = Keyboard.keyPressed();
 				if(input = 49){
 					//do Magic_Cube.main();
 				}
