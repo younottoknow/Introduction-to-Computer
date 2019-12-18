@@ -1,9 +1,11 @@
 class Main{
-	static boolean unquit;
+	static boolean play;
+	static boolean selecting;
 	function void main(){
 		var int input;
-		let unquit = true;
-		while (unquit){
+		let play = true;
+		while (play){
+			let selecting = true;
 			let input = 0;
 			do Output.moveCursor(10, 25);
 			do Output.printString("1 Magic Cube");
@@ -12,18 +14,25 @@ class Main{
 			do Output.moveCursor(14, 25);
 			do Output.printString("3 Snake");
 			do Output.moveCursor(16, 25);
-			do Output.printString("Press Q to Quit");
-			while(unquit){
+			do Output.printString("Press Esc to Quit");
+			while(selecting){
 				let input = Keyboard.keyPressed();
 				if(input = 49){
-					//do Magic_Cube.main();
+					do Magic_Cube.magic_cube();
+					do Screen.clearScreen();
+					let selecting = false;
 				}
 				else { if (input = 50){
 					//do Minesweeper.main();
+					do Screen.clearScreen();
+					let selecting = false;
 			    } else { if (input = 51){
 					//do Snake.main();
-				} else { if (input = 81){
-					let unquit = false;
+					do Screen.clearScreen();
+					let selecting = false;
+				} else { if (input = 140){
+					let play = false;
+					let selecting = false;
 				}}}}
 			}
 		}

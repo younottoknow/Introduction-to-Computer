@@ -1,6 +1,6 @@
  class Magic_Cube {
 	static Array arr;
-	function void main(){
+	function void magic_cube(){
 		var int count;
 		var int tmp;
 		var int numofgenerate;
@@ -11,8 +11,11 @@
 		let count = 0;
 		let tmp = 53;
 		let numofgenerate = 20;
-		do Output.moveCursor(12,25);
-		do Output.printString("Press any key to start.");
+		do Screen.clearScreen();
+		do Output.moveCursor(12,20);
+		do Output.printString("Press any key except F4 to start.");
+		do Output.moveCursor(13,20);
+		do Output.printString("Press F4 to leave.");
 		while (Keyboard.keyPressed() = 0){
 			let count = count + 1;
 		}
@@ -47,12 +50,12 @@
 			let numofgenerate = numofgenerate - 1;
 		}
 		while (flag){
-			let input = Keyboard.readChar();
-			if(input = 113){
+			let input = Keyboard.keyPressed();
+			if(input = 144){
 				let flag = false;
 			}
 			else {
-				let input = input - 97;
+				let input = input - 65;
 				if((input > -1) & (input < 12)){
 					do Magic_Cube.move(input);
 				}
@@ -61,6 +64,9 @@
 		return;
 	}
 	function void move(int now){
+		return;
+	}
+	function void display(){
 		return;
 	}
 }
