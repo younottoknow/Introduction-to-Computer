@@ -1,15 +1,6 @@
 class Util {
 	// utility
 	static int _lastKey_key;
-	function void sleep(int tick) {
-		// sleep tick
-		var int t;
-		let t = 0;
-		while (t < tick) {
-			let t = t + 1;
-		}
-		return;
-	}
 	function int lastKey() {
 		var int c;
 		let c = Keyboard.keyPressed();
