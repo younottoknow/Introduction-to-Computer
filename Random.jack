@@ -1,4 +1,4 @@
-class Random{
+class Random {
 	static int seed;
 	function int random(){
 		let seed = Util.xor(seed, 313);

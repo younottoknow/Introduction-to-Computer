@@ -1,0 +1,38 @@
+class Queue {
+	field Array data;
+	field int length;
+	field int ql;
+	field int qr;
+	constructor Queue new(int _length) {
+		let length = _length;
+		let data = Array.new(length);
+		let ql = 0;
+		let qr = 0;
+		return this;
+	}
+	method void dispose() {
+		do data.dispose();
+		return;
+	}
+	method bool empty() {
+		return ql = qr;
+	}
+	method void push(int x) {
+		let data[qr] = x;
+		let qr = qr + 1;
+		if (qr=length) {
+			let qr = 0;
+		}
+		return;
+	}
+	method int front() {
+		return data[ql];
+	}
+	method void pop() {
+		let ql = ql - 1;
+		if (ql=-1) {
+			let ql = length - 1;
+		}
+		return;
+	}
+}
