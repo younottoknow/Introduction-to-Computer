@@ -1,0 +1,26 @@
+class Util {
+	// utility
+	static int _lastKey_key;
+	function void sleep(int tick) {
+		// sleep tick
+		var int t;
+		let t = 0;
+		while (t < tick) {
+			let t = t + 1;
+		}
+		return;
+	}
+	function int lastKey() {
+		var int c;
+		let c = Keyboard.keyPressed();
+		if (c=_lastKey_key) {
+			return 0;
+		} else {
+			let _lastKey_key = c;
+			return c;
+		}
+	}
+	function int modulo(int a, int b) {
+		return a - ( a / b * b );
+	}
+}
