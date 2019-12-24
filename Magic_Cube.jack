@@ -1,17 +1,39 @@
  class Magic_Cube {
 	static Array arr;
+	static int rightside;
+	static int size;
+	static int sizex;
+	static int sizey;
+	static int sizez;
 	function void magic_cube(){
 		var int count;
 		var int tmp;
 		var int numofgenerate;
 		var int input;
+		var int n;
+		var int thick;
+		var int ox;
+		var int oy;
+		var int nowx;
+		var int nowy;
+		var int row;
+		var int column;
 		var boolean flag;
+		let size = 38;
+		let sizex = 33;
+		let sizey = 19;
+		let sizez = 60;
+		let n = 3;
+		let thick = 2;
+		let ox = 128;
+		let oy = 12;
 		let flag = true;
 		let arr = Memory.alloc(54);
 		let count = 0;
 		let tmp = 53;
 		let numofgenerate = 20;
 		do Screen.clearScreen();
+		do Sys.wait(1000);
 		do Output.moveCursor(12,20);
 		do Output.printString("Press any key except F4 to start.");
 		do Output.moveCursor(13,20);
@@ -49,24 +71,163 @@
 			do Magic_Cube.move(count);
 			let numofgenerate = numofgenerate - 1;
 		}
+		do Screen.clearScreen();
+		do Screen.setColor(true);		
+		while(n > -1){
+			do Screen.drawLine(sizex*n+ox,sizey*n+oy,sizex*(n-3)+ox,sizey*(n+3)+oy);
+			do Screen.drawLine(ox-(sizex*n),oy+(sizey*n),sizex*(3-n)+ox,sizey*(3+n)+oy);
+			do Screen.drawLine(ox,size*(n+3)+oy,-sizex*3+ox,size*(n+3)-(sizey*3)+oy);
+			do Screen.drawLine(ox,size*(n+3)+oy,sizex*3+ox,size*(n+3)-(sizey*3)+oy);
+			do Screen.drawLine(ox-(sizex*n),oy+(size*3)-(sizey*n),ox-(sizex*n),oy+(size*6)-(sizey*n));
+			do Screen.drawLine(ox+(sizex*n),oy+(size*3)-(sizey*n),ox+(sizex*n),oy+(size*6)-(sizey*n));
+			do Screen.drawRectangle(sizez*n+264,38,sizez*n+264+thick,sizez*3+38);
+			do Screen.drawRectangle(264,sizez*n+38,sizez*3+264,sizez*n+38+thick);
+			let n = n - 1;
+		}
+		while(thick > 0){
+			let n = 3;
+			let ox = ox + 1;
+			while(n > -1){
+				do Screen.drawLine(sizex*n+ox,sizey*n+oy,sizex*(n-3)+ox,sizey*(n+3)+oy);
+				do Screen.drawLine(ox-(sizex*n),oy+(sizey*n),sizex*(3-n)+ox,sizey*(3+n)+oy);
+				do Screen.drawLine(ox,size*(n+3)+oy,-sizex*3+ox,size*(n+3)-(sizey*3)+oy);
+				do Screen.drawLine(ox,size*(n+3)+oy,sizex*3+ox,size*(n+3)-(sizey*3)+oy);
+				do Screen.drawLine(ox-(sizex*n),oy+(size*3)-(sizey*n),ox-(sizex*n),oy+(size*6)-(sizey*n));
+				do Screen.drawLine(ox+(sizex*n),oy+(size*3)-(sizey*n),ox+(sizex*n),oy+(size*6)-(sizey*n));
+				let n = n - 1;
+			}
+			let thick = thick - 1;
+		}			
+		let ox = ox - 2;
 		while (flag){
+			let n = 3;
+			while(n > 0){
+				if(n = 1){
+					let nowx = ox;
+					let nowy = oy;
+				}
+				else{if(n = 2){
+					let nowx = ox - (sizex*3);
+					let nowy = oy + (sizey*3);
+				}
+				else{if(n = 3){
+					let nowx = ox;
+					let nowy = oy + (size*3);
+				}}}
+				let row = 0;
+				while(row < 3){
+					let column = 0;
+					if(n < 3){
+						while(column < 3){
+							do Magic_Cube.display(arr[(n*9)+(row*3)+column],nowx+(sizex*column),nowy+(sizey*column),n);
+							let column = column + 1;
+						}
+					}
+					else{
+						while(column < 3){
+							do Magic_Cube.display(arr[(n*9)+(row*3)+column],nowx+(sizex*column),nowy-(sizey*column),n);
+							let column = column + 1;
+						}
+					}
+					if(n = 1){
+						let nowx = nowx - sizex;
+						let nowy = nowy + sizey;
+					}
+					else{if(n = 2){
+						let nowy = nowy + size;
+					}
+					else{if(n = 3){
+						let nowy = nowy + size;
+					}}}
+					let row = row + 1;
+				}
+				let n = n - 1;
+			}
 			let input = Keyboard.keyPressed();
 			if(input = 144){
 				let flag = false;
 			}
 			else {
-				let input = input - 65;
-				if((input > -1) & (input < 12)){
-					do Magic_Cube.move(input);
+				if(input > 48 & input <55){
+					let rightside = input - 49;
 				}
 			}
+
 		}
 		return;
 	}
 	function void move(int now){
 		return;
 	}
-	function void display(){
+	function void display(int kind,int x,int y, int which){
+		do Screen.setColor(true);
+		if(which  = 1){
+			if(kind = 1){
+				do Screen.drawCircle(x, y+sizey, 5);}
+			else{if(kind = 2){
+				do Screen.drawLine(x,y,x,y+size);
+				do Screen.drawLine(x-sizex,y+sizey,x+sizex,y+sizey);}
+			else{if(kind = 3){
+				do Screen.drawLine(x-(sizex/2),y+(sizey/2),x+(sizex/2),y+(sizey*3/2));
+				do Screen.drawLine(x+(sizex/2),y+(sizey/2),x-(sizex/2),y+(sizey*3/2));}
+			else{if(kind = 4){
+				do Screen.drawLine(x-(sizex/2),y+(sizey/2),x-(sizex/2),y+(sizey*3/2));
+				do Screen.drawLine(x+(sizex/2),y+(sizey/2),x+(sizex/2),y+(sizey*3/2));
+				do Screen.drawLine(x-(sizex/2),y+(sizey/2),x+(sizex/2),y+(sizey/2));
+				do Screen.drawLine(x-(sizex/2),y+(sizey*3/2),x+(sizex/2),y+(sizey*3/2));}
+			else{if(kind = 5){
+				do Screen.drawLine(x,y,x+(sizex/2),y+(sizey*3/2));
+				do Screen.drawLine(x-(sizex/2),y+(sizey/2),x,y+size);
+				do Screen.drawLine(x-sizex,y+sizey,x+(sizex/2),y+(sizey/2));
+				do Screen.drawLine(x-(sizex/2),y+(sizey*3/2),x+sizex,y+sizey);
+			}}}}}
+		}
+		else{if(which = 2){
+			if(kind = 1){
+				do Screen.drawCircle(x+(sizex/2), y+(sizey*3/2), 5);
+			}
+			else{if(kind = 2){
+				do Screen.drawLine(x,y,x+sizex,y+size+sizey);
+				do Screen.drawLine(x,y+size,x+sizex,y+sizey);}
+			else{if(kind = 3){
+				do Screen.drawLine(x+(sizex/2),y+(sizey/2),x+(sizex/2),y+size+(sizey/2));
+				do Screen.drawLine(x,y+sizey,x+sizex,y+size);}
+			else{if(kind = 4){
+				do Screen.drawLine(x,y+sizey,x+(sizex/2),y+(sizey/2));
+				do Screen.drawLine(x,y+sizey,x+(sizex/2),y+size+(sizey/2));
+				do Screen.drawLine(x+sizex,y+size,x+(sizex/2),y+(sizey/2));
+				do Screen.drawLine(x+sizex,y+size,x+(sizex/2),y+size+(sizey/2));}
+			else{if(kind = 5){
+				do Screen.drawLine(x,y,x+sizex,y+size);
+				do Screen.drawLine(x,y+sizey,x+sizex,y+size+sizey);
+				do Screen.drawLine(x+(sizex/2),y+(sizey/2),x,y+size);
+				do Screen.drawLine(x+sizex,y+sizey,x+(sizex/2),y+size+(sizey/2));}
+			}}}}
+		}
+		else{if(which = 3){
+			if(kind = 1){
+				do Screen.drawCircle(x+(sizex/2), y+(sizey/2), 5);
+			}
+			else{if(kind = 2){
+				do Screen.drawLine(x,y,x+sizex,y+sizey);
+				do Screen.drawLine(x,y+size,x+sizex,y+sizey-size);}
+			else{if(kind = 3){
+				do Screen.drawLine(x+(sizex/2),y-(sizey/2),x+(sizex/2),y+size-(sizey/2));
+				do Screen.drawLine(x,y+sizey,x+sizex,y);}
+			else{if(kind = 4){
+				do Screen.drawLine(x,y+sizey,x+(sizex/2),y-(sizey/2));
+				do Screen.drawLine(x,y+sizey,x+(sizex/2),y+size-(sizey/2));
+				do Screen.drawLine(x+sizex,y,x+(sizex/2),y-(sizey/2));
+				do Screen.drawLine(x+sizex,y,x+(sizex/2),y+size-(sizey/2));}
+			else{if(kind = 5){
+				do Screen.drawLine(x,y,x+sizex,y+sizey);
+				do Screen.drawLine(x,y+sizey,x+sizex,y+size);
+				do Screen.drawLine(x+(sizex/2),y-(sizey/2),x,y+sizey);
+				do Screen.drawLine(x+sizex,y-sizey,x+(sizex/2),y+sizey-(sizey/2));
+			}}}}}
+		}
+		}
+		}
 		return;
 	}
 }
