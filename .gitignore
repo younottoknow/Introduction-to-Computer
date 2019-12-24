@@ -1,2 +1,3 @@
 # ignore compiled vm file
 *.vm
+*.swp

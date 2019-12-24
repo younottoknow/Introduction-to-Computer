@@ -23,4 +23,7 @@ class Util {
 	function int modulo(int a, int b) {
 		return a - ( a / b * b );
 	}
+	function int xor(int a, int b) {
+		return (~(a & b)) & (a | b);
+	}
 }

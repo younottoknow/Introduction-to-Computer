@@ -1,9 +1,11 @@
 class Random{
 	static int seed;
 	function int random(){
-		let seed = 257 * seed + 17;
-		let seed = seed & 32767;
-		return seed;
+		let seed = Util.xor(seed, 313);
+		let seed = 331 * seed + 17;
+		let seed = seed/10 + (Util.modulo(seed, 10)*1000);
+		let seed = seed * 23;
+		return seed & 32767;
 	}
 	function void srand(int s){
 		let seed = s;
