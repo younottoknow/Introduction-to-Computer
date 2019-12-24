@@ -20,7 +20,7 @@ class Queue {
 	method void push(int x) {
 		let data[qr] = x;
 		let qr = qr + 1;
-		if (qr=length) {
+		if (qr = length) {
 			let qr = 0;
 		}
 		return;
@@ -29,9 +29,9 @@ class Queue {
 		return data[ql];
 	}
 	method void pop() {
-		let ql = ql - 1;
-		if (ql=-1) {
-			let ql = length - 1;
+		let ql = ql + 1;
+		if (ql = length) {
+			let ql = 0;
 		}
 		return;
 	}
