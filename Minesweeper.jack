@@ -2722,7 +2722,9 @@ class Minesweeper {
             let not_quit = ~(i=128);
         }
         do Minesweeper.generateMap();
-        do Minesweeper.toggle();
+        if (Minesweeper.toggle()) {
+            return;
+        }
 
         while (true) {
             let i = Minesweeper.nextOp();
