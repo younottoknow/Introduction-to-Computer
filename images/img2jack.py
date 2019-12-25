@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from PIL import Image
+from PIL import ImageFilter
 import argparse
 
 def process_argument():
@@ -9,7 +10,9 @@ def process_argument():
     parser.add_argument('-x', '--height', type=int, help='高度', default=13)
     parser.add_argument('-u', '--offsetX', type=str, help='x位移', default='')
     parser.add_argument('-l', '--offsetY', type=str, help='y位移', default='')
-    parser.add_argument('-o', action='store_true', dest='optimized')
+    parser.add_argument('-t', '--threshold', type=int, help='黑白參數', default=-1)
+    parser.add_argument('-s', action='store_true', dest='smooth', help='平滑化圖片')
+    parser.add_argument('-o', action='store_true', dest='optimized', help='優化輸出量')
     return parser.parse_args()
 
 def alpha_to_color(image, color=(255, 255, 255)):
@@ -37,9 +40,26 @@ def main():
         arg.offsetY += '+'
     img = Image.open(arg.filename)
     width, height = img.size
+    # remove alpha layer
     img = img.convert('RGBA')
     img = alpha_to_color(img)
-    img = img.convert('1')
+    if arg.smooth:
+        # smoothify image
+        img = img.filter(ImageFilter.SMOOTH_MORE)
+    img.save('__'+arg.filename)
+    if arg.threshold < 0:
+        # default binarize
+        img = img.convert('1')
+    else:
+        # custom binarize
+        img = img.convert('L')
+        for x in range(height):
+            for y in range(width):
+                if img.getpixel((y, x)) > arg.threshold:
+                    img.putpixel((y, x), 255)
+                else:
+                    img.putpixel((y, x), 0)
+    # resize image
     img = img.resize((arg.width, arg.height), Image.ANTIALIAS)
     img.save('_'+arg.filename)
 
