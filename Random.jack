@@ -1,14 +1,17 @@
 class Random {
+	// xorshift algorithm from https://dve.tw/5PG
 	static int seed;
+	static int hidden;
 	function int random(){
-		let seed = Util.xor(seed, 313);
-		let seed = 331 * seed + 17;
-		let seed = seed/10 + (Util.modulo(seed, 10)*1000);
-		let seed = seed * 23;
-		return seed & 32767;
+		var int t;
+		let t = Util.xor(hidden, hidden * 32);
+		let hidden = seed;
+		let seed = Util.xor(Util.xor(seed, seed/2), Util.xor(t, t / 8));
+		return seed;
 	}
 	function void srand(int s){
 		let seed = s;
+		let hidden = 1;
 		return;
 	}
 }
