@@ -1,19 +1,19 @@
  class Magic_Cube {
 	static Array arr;
-	static int rightside;
+	//static int rightside;
 	static int size;
 	static int sizex;
 	static int sizey;
 	static int sizez;
+	static int n;
+	static int thick;
+	static int ox;
+	static int oy;
 	function void magic_cube(){
 		var int count;
 		var int tmp;
 		var int numofgenerate;
 		var int input;
-		var int n;
-		var int thick;
-		var int ox;
-		var int oy;
 		var int nowx;
 		var int nowy;
 		var int row;
@@ -23,6 +23,7 @@
 		let sizex = 33;
 		let sizey = 19;
 		let sizez = 60;
+		//let rightside = 0;
 		let n = 3;
 		let thick = 2;
 		let ox = 128;
@@ -33,12 +34,11 @@
 		let tmp = 53;
 		let numofgenerate = 20;
 		do Screen.clearScreen();
-		do Sys.wait(1000);
 		do Output.moveCursor(12,20);
 		do Output.printString("Press any key except F4 to start.");
 		do Output.moveCursor(13,20);
 		do Output.printString("Press F4 to leave.");
-		while (Keyboard.keyPressed() = 0){
+		while (Util.lastKey() = 0){
 			let count = count + 1;
 		}
 		while (tmp > 44){
@@ -68,99 +68,688 @@
 		do Random.srand(count);
 		while(numofgenerate > 0){
 			let count = Random.random();
+			let count = count - (count/12*12);
 			do Magic_Cube.move(count);
 			let numofgenerate = numofgenerate - 1;
 		}
 		do Screen.clearScreen();
-		do Screen.setColor(true);		
-		while(n > -1){
-			do Screen.drawLine(sizex*n+ox,sizey*n+oy,sizex*(n-3)+ox,sizey*(n+3)+oy);
-			do Screen.drawLine(ox-(sizex*n),oy+(sizey*n),sizex*(3-n)+ox,sizey*(3+n)+oy);
-			do Screen.drawLine(ox,size*(n+3)+oy,-sizex*3+ox,size*(n+3)-(sizey*3)+oy);
-			do Screen.drawLine(ox,size*(n+3)+oy,sizex*3+ox,size*(n+3)-(sizey*3)+oy);
-			do Screen.drawLine(ox-(sizex*n),oy+(size*3)-(sizey*n),ox-(sizex*n),oy+(size*6)-(sizey*n));
-			do Screen.drawLine(ox+(sizex*n),oy+(size*3)-(sizey*n),ox+(sizex*n),oy+(size*6)-(sizey*n));
-			do Screen.drawRectangle(sizez*n+264,38,sizez*n+264+thick,sizez*3+38);
-			do Screen.drawRectangle(264,sizez*n+38,sizez*3+264,sizez*n+38+thick);
-			let n = n - 1;
-		}
-		while(thick > 0){
-			let n = 3;
-			let ox = ox + 1;
-			while(n > -1){
-				do Screen.drawLine(sizex*n+ox,sizey*n+oy,sizex*(n-3)+ox,sizey*(n+3)+oy);
-				do Screen.drawLine(ox-(sizex*n),oy+(sizey*n),sizex*(3-n)+ox,sizey*(3+n)+oy);
-				do Screen.drawLine(ox,size*(n+3)+oy,-sizex*3+ox,size*(n+3)-(sizey*3)+oy);
-				do Screen.drawLine(ox,size*(n+3)+oy,sizex*3+ox,size*(n+3)-(sizey*3)+oy);
-				do Screen.drawLine(ox-(sizex*n),oy+(size*3)-(sizey*n),ox-(sizex*n),oy+(size*6)-(sizey*n));
-				do Screen.drawLine(ox+(sizex*n),oy+(size*3)-(sizey*n),ox+(sizex*n),oy+(size*6)-(sizey*n));
-				let n = n - 1;
+		do Magic_Cube.frame();
+		do Output.moveCursor(3,32);
+		do Output.printString("Q:L', A:L, C:R', D:R");
+		do Output.moveCursor(4,32);
+		do Output.printString("Z:F', X:F, E:B', W:B");
+		do Output.moveCursor(5,32);
+		do Output.printString("T:U', Y:U, B:D', N:D");
+		do Output.moveCursor(7,32);
+		do Output.printString("1:spin around Z-axis clockwise");
+		do Output.moveCursor(8,32);
+		do Output.printString("2:spin around Z-axis");
+		do Output.moveCursor(9,34);
+		do Output.printString("counterclockwise");
+		do Output.moveCursor(10,32);
+		do Output.printString("3:spin around X-axis");
+		do Output.moveCursor(11,34);
+		do Output.printString("counterclockwise");
+		do Output.moveCursor(12,32);
+		do Output.printString("4:spin around X-axis clockwise");
+		do Output.moveCursor(13,32);
+		do Output.printString("5:spin around Y-axis");
+		do Output.moveCursor(14,34);
+		do Output.printString("counterclockwise");
+		do Output.moveCursor(15,32);
+		do Output.printString("6:spin around Y-axis clockwise");
+		let n = 3;
+		while(n > 0){
+			if(n = 1){
+				let nowx = ox;
+				let nowy = oy;
 			}
-			let thick = thick - 1;
-		}			
-		let ox = ox - 2;
-		while (flag){
-			let n = 3;
-			while(n > 0){
+			else{if(n = 2){
+				let nowx = ox - (sizex*3);
+				let nowy = oy + (sizey*3);
+			}
+			else{if(n = 3){
+				let nowx = ox;
+				let nowy = oy + (size*3);
+			}}}
+			let row = 0;
+			while(row < 3){
+				let column = 0;
+				if(n < 3){
+					while(column < 3){
+						do Magic_Cube.display(arr[((n-1)*9)+(row*3)+column],nowx+(sizex*column),nowy+(sizey*column),n,true);
+						let column = column + 1;
+					}
+				}
+				else{
+					while(column < 3){
+						do Magic_Cube.display(arr[((n-1)*9)+(row*3)+column],nowx+(sizex*column),nowy-(sizey*column),n,true);
+						let column = column + 1;
+					}
+				}
 				if(n = 1){
-					let nowx = ox;
-					let nowy = oy;
+					let nowx = nowx - sizex;
+					let nowy = nowy + sizey;
 				}
 				else{if(n = 2){
-					let nowx = ox - (sizex*3);
-					let nowy = oy + (sizey*3);
+					let nowy = nowy + size;
 				}
 				else{if(n = 3){
-					let nowx = ox;
-					let nowy = oy + (size*3);
+					let nowy = nowy + size;
 				}}}
-				let row = 0;
-				while(row < 3){
-					let column = 0;
-					if(n < 3){
-						while(column < 3){
-							do Magic_Cube.display(arr[(n*9)+(row*3)+column],nowx+(sizex*column),nowy+(sizey*column),n);
-							let column = column + 1;
-						}
-					}
-					else{
-						while(column < 3){
-							do Magic_Cube.display(arr[(n*9)+(row*3)+column],nowx+(sizex*column),nowy-(sizey*column),n);
-							let column = column + 1;
-						}
-					}
+				let row = row + 1;
+			}
+			let n = n - 1;
+		}
+		while (flag){
+			let input = Util.lastKey();
+			if(input = 144){	// input = F4;
+				let flag = false;} 
+			else {if((input > 48) & (input < 55)){	//input = '1'~'6'
+				//do Magic_Cube.show(false);
+				//let rightside = input - 49;
+				//do Magic_Cube.show(true);
+				let n = 3;
+				while(n > 0){
 					if(n = 1){
-						let nowx = nowx - sizex;
-						let nowy = nowy + sizey;
+						let nowx = ox;
+						let nowy = oy;
 					}
 					else{if(n = 2){
-						let nowy = nowy + size;
+						let nowx = ox - (sizex*3);
+						let nowy = oy + (sizey*3);
 					}
 					else{if(n = 3){
-						let nowy = nowy + size;
+						let nowx = ox;
+						let nowy = oy + (size*3);
 					}}}
-					let row = row + 1;
+					let row = 0;
+					while(row < 3){
+						let column = 0;
+						if(n < 3){
+							while(column < 3){
+								do Magic_Cube.display(arr[((n-1)*9)+(row*3)+column],nowx+(sizex*column),nowy+(sizey*column),n,false);
+								let column = column + 1;
+							}
+						}
+						else{
+							while(column < 3){
+								do Magic_Cube.display(arr[((n-1)*9)+(row*3)+column],nowx+(sizex*column),nowy-(sizey*column),n,false);
+								let column = column + 1;
+							}
+						}
+						if(n = 1){
+							let nowx = nowx - sizex;
+							let nowy = nowy + sizey;
+						}
+						else{if(n = 2){
+							let nowy = nowy + size;
+						}
+						else{if(n = 3){
+							let nowy = nowy + size;
+						}}}
+						let row = row + 1;
+					}
+					let n = n - 1;
 				}
-				let n = n - 1;
-			}
-			let input = Keyboard.keyPressed();
-			if(input = 144){
-				let flag = false;
-			}
-			else {
-				if(input > 48 & input <55){
-					let rightside = input - 49;
+				do Magic_Cube.frame();
+				if(input < 51){
+					if(input = 49){
+						do Magic_Cube.move(8);
+						do Magic_Cube.move(16);
+						do Magic_Cube.move(10);
+					}
+					else{
+						do Magic_Cube.move(9);
+						do Magic_Cube.move(17);
+						do Magic_Cube.move(11);
+					}
+				}
+				else{if(input < 53){
+					if(input = 51){
+						do Magic_Cube.move(7);
+						do Magic_Cube.move(12);
+						do Magic_Cube.move(2);
+					}
+					else{
+						do Magic_Cube.move(6);
+						do Magic_Cube.move(13);
+						do Magic_Cube.move(3);
+					}
+				}
+				else{
+					if(input = 53){
+						do Magic_Cube.move(1);
+						do Magic_Cube.move(14);
+						do Magic_Cube.move(4);
+					}
+					else{
+						do Magic_Cube.move(0);
+						do Magic_Cube.move(15);
+						do Magic_Cube.move(5);
+					}
+				}}
+				let n = 3;
+				while(n > 0){
+					if(n = 1){
+						let nowx = ox;
+						let nowy = oy;
+					}
+					else{if(n = 2){
+						let nowx = ox - (sizex*3);
+						let nowy = oy + (sizey*3);
+					}
+					else{if(n = 3){
+						let nowx = ox;
+						let nowy = oy + (size*3);
+					}}}
+					let row = 0;
+					while(row < 3){
+						let column = 0;
+						if(n < 3){
+							while(column < 3){
+								do Magic_Cube.display(arr[((n-1)*9)+(row*3)+column],nowx+(sizex*column),nowy+(sizey*column),n,true);
+								let column = column + 1;
+							}
+						}
+						else{
+							while(column < 3){
+								do Magic_Cube.display(arr[((n-1)*9)+(row*3)+column],nowx+(sizex*column),nowy-(sizey*column),n,true);
+								let column = column + 1;
+							}
+						}
+						if(n = 1){
+							let nowx = nowx - sizex;
+							let nowy = nowy + sizey;
+						}
+						else{if(n = 2){
+							let nowy = nowy + size;
+						}
+						else{if(n = 3){
+							let nowy = nowy + size;
+						}}}
+						let row = row + 1;
+					}
+					let n = n - 1;
 				}
 			}
-
+			else{if(input = 81){	//input = 'Q'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp*3],ox-(sizex*tmp),oy+(sizey*tmp),1,false);
+					do Magic_Cube.display(arr[tmp*3+9],ox-(sizex*3),oy+(sizey*3)+(size*tmp),2,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(0);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp*3],ox-(sizex*tmp),oy+(sizey*tmp),1,true);
+					do Magic_Cube.display(arr[tmp*3+9],ox-(sizex*3),oy+(sizey*3)+(size*tmp),2,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}	
+			else{if(input = 65){	//input = 'A'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp*3],ox-(sizex*tmp),oy+(sizey*tmp),1,false);
+					do Magic_Cube.display(arr[tmp*3+9],ox-(sizex*3),oy+(sizey*3)+(size*tmp),2,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(1);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp*3],ox-(sizex*tmp),oy+(sizey*tmp),1,true);
+					do Magic_Cube.display(arr[tmp*3+9],ox-(sizex*3),oy+(sizey*3)+(size*tmp),2,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if(input = 90){	//input = 'Z'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+6],ox-(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,false);
+					do Magic_Cube.display(arr[tmp*3+18],ox,oy+(size*(3+tmp)),3,false);
+					do Magic_Cube.display(arr[tmp*3+9],ox-(sizex*3),oy+(sizey*3)+(size*tmp),2,false);
+					do Magic_Cube.display(arr[tmp*3+10],ox-(sizex*2),oy+(sizey*4)+(size*tmp),2,false);
+					do Magic_Cube.display(arr[tmp*3+11],ox-sizex,oy+(sizey*5)+(size*tmp),2,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(2);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+6],ox-(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,true);
+					do Magic_Cube.display(arr[tmp*3+18],ox,oy+(size*(3+tmp)),3,true);
+					do Magic_Cube.display(arr[tmp*3+9],ox-(sizex*3),oy+(sizey*3)+(size*tmp),2,true);
+					do Magic_Cube.display(arr[tmp*3+10],ox-(sizex*2),oy+(sizey*4)+(size*tmp),2,true);
+					do Magic_Cube.display(arr[tmp*3+11],ox-sizex,oy+(sizey*5)+(size*tmp),2,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if(input = 88){	//input = 'X'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+6],ox-(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,false);
+					do Magic_Cube.display(arr[tmp*3+18],ox,oy+(size*(3+tmp)),3,false);
+					do Magic_Cube.display(arr[tmp*3+9],ox-(sizex*3),oy+(sizey*3)+(size*tmp),2,false);
+					do Magic_Cube.display(arr[tmp*3+10],ox-(sizex*2),oy+(sizey*4)+(size*tmp),2,false);
+					do Magic_Cube.display(arr[tmp*3+11],ox-sizex,oy+(sizey*5)+(size*tmp),2,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(3);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+6],ox-(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,true);
+					do Magic_Cube.display(arr[tmp*3+18],ox,oy+(size*(3+tmp)),3,true);
+					do Magic_Cube.display(arr[tmp*3+9],ox-(sizex*3),oy+(sizey*3)+(size*tmp),2,true);
+					do Magic_Cube.display(arr[tmp*3+10],ox-(sizex*2),oy+(sizey*4)+(size*tmp),2,true);
+					do Magic_Cube.display(arr[tmp*3+11],ox-sizex,oy+(sizey*5)+(size*tmp),2,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if((input > 66) & (input < 69)){	//input = 'C', 'D'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp*3+2],ox+(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,false);
+					do Magic_Cube.display(arr[tmp*3+11],ox-sizex,oy-sizey+(size*(3+tmp)),2,false);
+					do Magic_Cube.display(arr[tmp*3+18],ox,oy+(sizey*6)+(size*tmp),3,false);
+					do Magic_Cube.display(arr[tmp*3+19],ox+sizex,oy+(sizey*5)+(size*tmp),3,false);
+					do Magic_Cube.display(arr[tmp*3+20],ox+(sizex*2),oy+(sizey*4)+(size*tmp),3,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(input - 63);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp*3+2],ox+(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,true);
+					do Magic_Cube.display(arr[tmp*3+11],ox-sizex,oy-sizey+(size*(3+tmp)),2,true);
+					do Magic_Cube.display(arr[tmp*3+18],ox,oy+(sizey*6)+(size*tmp),3,true);
+					do Magic_Cube.display(arr[tmp*3+19],ox+sizex,oy+(sizey*5)+(size*tmp),3,true);
+					do Magic_Cube.display(arr[tmp*3+20],ox+(sizex*2),oy+(sizey*4)+(size*tmp),3,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if(input = 69){	//input = 'E'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,false);
+					do Magic_Cube.display(arr[tmp*3+20],ox+(sizex*2),oy+(size*(2+tmp)),3,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(6);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,true);
+					do Magic_Cube.display(arr[tmp*3+20],ox+(sizex*2),oy+(size*(2+tmp)),3,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if(input = 87){	//input = 'W'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,false);
+					do Magic_Cube.display(arr[tmp*3+20],ox+(sizex*2),oy+(size*(2+tmp)),3,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(7);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,true);
+					do Magic_Cube.display(arr[tmp*3+20],ox+(sizex*2),oy+(size*(2+tmp)),3,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if(input = 84){	//input = 'T'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+9],ox-(sizex*(3-tmp)),oy+(sizey*(3+tmp)),2,false);
+					do Magic_Cube.display(arr[tmp+18],ox+(sizex*tmp),oy-(sizey*tmp)+(size*3),3,false);
+					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,false);
+					do Magic_Cube.display(arr[tmp+3],ox+(sizex*(tmp-1)),oy+(sizey*(tmp+1)),1,false);
+					do Magic_Cube.display(arr[tmp+6],ox+(sizex*(tmp-2)),oy+(sizey*(tmp+2)),1,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(8);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+9],ox-(sizex*(3-tmp)),oy+(sizey*(3+tmp)),2,true);
+					do Magic_Cube.display(arr[tmp+18],ox+(sizex*tmp),oy-(sizey*tmp)+(size*3),3,true);
+					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,true);
+					do Magic_Cube.display(arr[tmp+3],ox+(sizex*(tmp-1)),oy+(sizey*(tmp+1)),1,true);
+					do Magic_Cube.display(arr[tmp+6],ox+(sizex*(tmp-2)),oy+(sizey*(tmp+2)),1,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if(input = 89){	//input = 'Y'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+9],ox-(sizex*(3-tmp)),oy+(sizey*(3+tmp)),2,false);
+					do Magic_Cube.display(arr[tmp+18],ox+(sizex*tmp),oy-(sizey*tmp)+(size*3),3,false);
+					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,false);
+					do Magic_Cube.display(arr[tmp+3],ox+(sizex*(tmp-1)),oy+(sizey*(tmp+1)),1,false);
+					do Magic_Cube.display(arr[tmp+6],ox+(sizex*(tmp-2)),oy+(sizey*(tmp+2)),1,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(9);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+9],ox-(sizex*(3-tmp)),oy+(sizey*(3+tmp)),2,true);
+					do Magic_Cube.display(arr[tmp+18],ox+(sizex*tmp),oy-(sizey*tmp)+(size*3),3,true);
+					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,true);
+					do Magic_Cube.display(arr[tmp+3],ox+(sizex*(tmp-1)),oy+(sizey*(tmp+1)),1,true);
+					do Magic_Cube.display(arr[tmp+6],ox+(sizex*(tmp-2)),oy+(sizey*(tmp+2)),1,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if(input = 66){	//input = 'B'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+15],ox-(sizex*(3-tmp)),oy+(size*3)+(sizey*(1+tmp)),2,false);
+					do Magic_Cube.display(arr[tmp+24],ox+(sizex*tmp),oy+(size*5)-(sizey*tmp),3,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(10);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+15],ox-(sizex*(3-tmp)),oy+(size*3)+(sizey*(1+tmp)),2,true);
+					do Magic_Cube.display(arr[tmp+24],ox+(sizex*tmp),oy+(size*5)-(sizey*tmp),3,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			else{if(input = 78){	//input = 'N'
+				//do Magic_Cube.show(false);
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+15],ox-(sizex*(3-tmp)),oy+(size*3)+(sizey*(1+tmp)),2,false);
+					do Magic_Cube.display(arr[tmp+24],ox+(sizex*tmp),oy+(size*5)-(sizey*tmp),3,false);
+					let tmp = tmp + 1;
+				}
+				do Magic_Cube.move(11);
+				do Magic_Cube.frame();
+				let tmp = 0;
+				while(tmp < 3){
+					do Magic_Cube.display(arr[tmp+15],ox-(sizex*(3-tmp)),oy+(size*3)+(sizey*(1+tmp)),2,true);
+					do Magic_Cube.display(arr[tmp+24],ox+(sizex*tmp),oy+(size*5)-(sizey*tmp),3,true);
+					let tmp = tmp + 1;
+				}
+				//do Magic_Cube.show(true);
+			}
+			}}}}}}}}}}}}
+			do Sys.wait(50);
 		}
 		return;
 	}
 	function void move(int now){
+		var int k;
+		var int t;
+		let k = 0;
+		if(now = 0){
+			while(k < 3){
+				let t = arr[k*3];
+				let arr[k*3] = arr[k*3+9];
+				let arr[k*3+9] = arr[k*3+45];
+				let arr[k*3+45] = arr[-k*3+35];
+				let arr[-k*3+35] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(4,0);}
+		else{if(now = 1){
+			while(k < 3){
+				let t = arr[k*3];
+				let arr[k*3] = arr[-k*3+35];
+				let arr[-k*3+35] = arr[k*3+45];
+				let arr[k*3+45] = arr[k*3+9];
+				let arr[k*3+9] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(4,1);}
+		else{if(now = 2){
+			while(k < 3){
+				let t = arr[k+6];
+				let arr[k+6] = arr[k*3+18];
+				let arr[k*3+18] = arr[47-k];
+				let arr[47-k] = arr[-k*3+44];
+				let arr[-k*3+44] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(1,0);}
+		else{if(now = 3){
+			while(k < 3){
+				let t = arr[k+6];
+				let arr[k+6] = arr[-k*3+44];
+				let arr[-k*3+44] = arr[47-k];
+				let arr[47-k] = arr[k*3+18];
+				let arr[k*3+18] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(1,1);}
+		else{if(now = 4){
+			while(k < 3){
+				let t = arr[k*3+2];
+				let arr[k*3+2] = arr[-k*3+33];
+				let arr[-k*3+33] = arr[k*3+47];
+				let arr[k*3+47] = arr[k*3+11];
+				let arr[k*3+11] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(2,0);}
+		else{if(now = 5){
+			while(k < 3){
+				let t = arr[k*3+2];
+				let arr[k*3+2] = arr[k*3+11];
+				let arr[k*3+11] = arr[k*3+47];
+				let arr[k*3+47] = arr[-k*3+33];
+				let arr[-k*3+33] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(2,1);}
+		else{if(now = 6){
+			while(k < 3){
+				let t = arr[k];
+				let arr[k] = arr[-k*3+42];
+				let arr[-k*3+42] = arr[53-k];
+				let arr[53-k] = arr[k*3+20];
+				let arr[k*3+20] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(3,0);}
+		else{if(now = 7){
+			while(k < 3){
+				let t = arr[k];
+				let arr[k] = arr[k*3+20];
+				let arr[k*3+20] = arr[53-k];
+				let arr[53-k] = arr[-k*3+42];
+				let arr[-k*3+42] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(3,1);}
+		else{if(now = 8){
+			while(k < 3){
+				let t = arr[k+9];
+				let arr[k+9] = arr[k+18];
+				let arr[k+18] = arr[k+27];
+				let arr[k+27] = arr[k+36];
+				let arr[k+36] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(0,1);}
+		else{if(now = 9){
+			while(k < 3){
+				let t = arr[k+9];
+				let arr[k+9] = arr[k+36];
+				let arr[k+36] = arr[k+27];
+				let arr[k+27] = arr[k+18];
+				let arr[k+18] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(0,0);}
+		else{if(now = 10){
+			while(k < 3){
+				let t = arr[k+15];
+				let arr[k+15] = arr[k+24];
+				let arr[k+24] = arr[k+33];
+				let arr[k+33] = arr[k+42];
+				let arr[k+42] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(5,0);}
+		else{if(now = 11){
+			while(k < 3){
+				let t = arr[k+15];
+				let arr[k+15] = arr[k+42];
+				let arr[k+42] = arr[k+33];
+				let arr[k+33] = arr[k+24];
+				let arr[k+24] = t;
+				let k = k + 1;
+			}
+			do Magic_Cube.rotate(5,1);}
+		else{if(now = 12){
+			while(k < 3){
+				let t = arr[k+3];
+				let arr[k+3] = arr[k*3+19];
+				let arr[k*3+19] = arr[50-k];
+				let arr[50-k] = arr[-k*3+43];
+				let arr[-k*3+43] = t;
+				let k = k + 1;
+			}}
+		else{if(now = 13){
+			while(k < 3){
+				let t = arr[k+3];
+				let arr[k+3] = arr[-k*3+43];
+				let arr[-k*3+43] = arr[50-k];
+				let arr[50-k] = arr[k*3+19];
+				let arr[k*3+19] = t;
+				let k = k + 1;
+			}}
+		else{if(now = 14){
+			while(k < 3){
+				let t = arr[k*3+1];
+				let arr[k*3+1] = arr[-k*3+34];
+				let arr[-k*3+34] = arr[k*3+46];
+				let arr[k*3+46] = arr[k*3+10];
+				let arr[k*3+10] = t;
+				let k = k + 1;
+			}}
+		else{if(now = 15){
+			while(k < 3){
+				let t = arr[k*3+1];
+				let arr[k*3+1] = arr[k*3+10];
+				let arr[k*3+10] = arr[k*3+46];
+				let arr[k*3+46] = arr[-k*3+34];
+				let arr[-k*3+34] = t;
+				let k = k + 1;
+			}}
+		else{if(now = 16){
+			while(k < 3){
+				let t = arr[k+12];
+				let arr[k+12] = arr[k+21];
+				let arr[k+21] = arr[k+30];
+				let arr[k+30] = arr[k+39];
+				let arr[k+39] = t;
+				let k = k + 1;
+			}}
+		else{if(now = 17){
+			while(k < 3){
+				let t = arr[k+12];
+				let arr[k+12] = arr[k+39];
+				let arr[k+39] = arr[k+30];
+				let arr[k+30] = arr[k+21];
+				let arr[k+21] = t;
+				let k = k + 1;
+			}}
+		}}}}}}}}}}}}}}}}}
 		return;
 	}
-	function void display(int kind,int x,int y, int which){
-		do Screen.setColor(true);
+	function void rotate(int index, int dir){
+		var int t;
+		if(dir = 1){
+			let t = arr[index*9];
+			let arr[index*9] = arr[index*9+6];
+			let arr[index*9+6] = arr[index*9+8];
+			let arr[index*9+8] = arr[index*9+2];
+			let arr[index*9+2]= t;
+			let t = arr[index*9+1];
+			let arr[index*9+1] = arr[index*9+3];
+			let arr[index*9+3] = arr[index*9+7];
+			let arr[index*9+7] = arr[index*9+5];
+			let arr[index*9+5] = t;
+		}
+		else{
+			let t = arr[index*9];
+			let arr[index*9] = arr[index*9+2];
+			let arr[index*9+2] = arr[index*9+8];
+			let arr[index*9+8] = arr[index*9+6];
+			let arr[index*9+6]= t;
+			let t = arr[index*9+1];
+			let arr[index*9+1] = arr[index*9+5];
+			let arr[index*9+5] = arr[index*9+7];
+			let arr[index*9+7] = arr[index*9+3];
+			let arr[index*9+3] = t;
+		}
+		return;
+	}
+	// function void show (boolean color){
+	// 	var int rowz;
+	// 	var int columnz;
+	// 	do Screen.setColor(color);
+	// 	let rowz = 0;
+	// 	while(rowz < 3){
+	// 		let columnz = 0;
+	// 		while(columnz < 3){
+	// 			if(arr[(rightside*9)+(rowz*3)+columnz] = 1){
+	// 				do Screen.drawCircle(264+(sizez*columnz)+(sizez/2),38+(sizez*rowz)+(sizez/2), 8);}
+	// 			else{if(arr[(rightside*9)+(rowz*3)+columnz] = 2){
+	// 				do Screen.drawLine(264+(sizez*columnz),38+(sizez*rowz),264+(sizez*(columnz+1)),38+(sizez*(rowz+1)));
+	// 				do Screen.drawLine(264+(sizez*columnz),38+(sizez*(rowz+1)),264+(sizez*(columnz+1)),38+(sizez*rowz));}
+	// 			else{if(arr[(rightside*9)+(rowz*3)+columnz] = 3){
+	// 				do Screen.drawLine(264+(sizez*columnz)+(sizez/2),38+(sizez*rowz),264+(sizez*columnz)+(sizez/2),38+(sizez*(rowz+1)));
+	// 				do Screen.drawLine(264+(sizez*columnz),38+(sizez*rowz)+(sizez/2),264+(sizez*(columnz+1)),38+(sizez*rowz)+(sizez/2));}
+	// 			else{if(arr[(rightside*9)+(rowz*3)+columnz] = 4){
+	// 				do Screen.drawLine(264+(sizez*columnz),38+(sizez*rowz)+(sizez/2),264+(sizez*columnz)+(sizez/2),38+(sizez*rowz));
+	// 				do Screen.drawLine(264+(sizez*columnz),38+(sizez*rowz)+(sizez/2),264+(sizez*columnz)+(sizez/2),38+(sizez*(rowz+1)));
+	// 				do Screen.drawLine(264+(sizez*(columnz+1)),38+(sizez*rowz)+(sizez/2),264+(sizez*columnz)+(sizez/2),38+(sizez*rowz));
+	// 				do Screen.drawLine(264+(sizez*(columnz+1)),38+(sizez*rowz)+(sizez/2),264+(sizez*columnz)+(sizez/2),38+(sizez*(rowz+1)));}
+	// 			else{if(arr[(rightside*9)+(rowz*3)+columnz] = 5){
+	// 				do Screen.drawLine(264+(sizez*columnz),38+(sizez*rowz),264+(sizez*(columnz+1)),38+(sizez*rowz)+(sizez/2));
+	// 				do Screen.drawLine(264+(sizez*columnz),38+(sizez*rowz)+(sizez/2),264+(sizez*(columnz+1)),38+(sizez*(rowz+1)));
+	// 				do Screen.drawLine(264+(sizez*columnz),38+(sizez*(rowz+1)),264+(sizez*columnz)+(sizez/2),38+(sizez*rowz));
+	// 				do Screen.drawLine(264+(sizez*(columnz+1)),38+(sizez*rowz),264+(sizez*columnz)+(sizez/2),38+(sizez*(rowz+1)));}
+	// 			}}}}
+	// 		let columnz = columnz + 1;
+	// 		}
+	// 		let rowz = rowz + 1;
+	// 	}
+	// 	return;
+	// }
+	function void display(int kind,int x,int y, int which, boolean color){
+		do Screen.setColor(color);
 		if(which  = 1){
 			if(kind = 1){
 				do Screen.drawCircle(x, y+sizey, 5);}
@@ -220,14 +809,46 @@
 				do Screen.drawLine(x+sizex,y,x+(sizex/2),y-(sizey/2));
 				do Screen.drawLine(x+sizex,y,x+(sizex/2),y+size-(sizey/2));}
 			else{if(kind = 5){
-				do Screen.drawLine(x,y,x+sizex,y+sizey);
-				do Screen.drawLine(x,y+sizey,x+sizex,y+size);
-				do Screen.drawLine(x+(sizex/2),y-(sizey/2),x,y+sizey);
-				do Screen.drawLine(x+sizex,y-sizey,x+(sizex/2),y+sizey-(sizey/2));
+				do Screen.drawLine(x,y,x+sizex,y);
+				do Screen.drawLine(x,y+sizey,x+sizex,y+sizey);
+				do Screen.drawLine(x+(sizex/2),y-(sizey/2),x,y+size);
+				do Screen.drawLine(x+sizex,y-sizey,x+(sizex/2),y+sizey+(sizey/2));
 			}}}}}
 		}
 		}
 		}
+		return;
+	}
+	function void frame(){
+		do Screen.setColor(true);
+		let n = 3;
+		let thick = 2;
+		while(n > -1){
+			do Screen.drawLine(sizex*n+ox,sizey*n+oy,sizex*(n-3)+ox,sizey*(n+3)+oy);
+			do Screen.drawLine(ox-(sizex*n),oy+(sizey*n),sizex*(3-n)+ox,sizey*(3+n)+oy);
+			do Screen.drawLine(ox,size*(n+3)+oy,-sizex*3+ox,size*(n+3)-(sizey*3)+oy);
+			do Screen.drawLine(ox,size*(n+3)+oy,sizex*3+ox,size*(n+3)-(sizey*3)+oy);
+			do Screen.drawLine(ox-(sizex*n),oy+(size*3)-(sizey*n),ox-(sizex*n),oy+(size*6)-(sizey*n));
+			do Screen.drawLine(ox+(sizex*n),oy+(size*3)-(sizey*n),ox+(sizex*n),oy+(size*6)-(sizey*n));
+			// do Screen.drawRectangle(sizez*n+264,38,sizez*n+264+thick,sizez*3+38);
+			// do Screen.drawRectangle(264,sizez*n+38,sizez*3+264,sizez*n+38+thick);
+			let n = n - 1;
+		}
+		while(thick > 0){
+			let n = 3;
+			let ox = ox + 1;
+			while(n > -1){
+				do Screen.drawLine(sizex*n+ox,sizey*n+oy,sizex*(n-3)+ox,sizey*(n+3)+oy);
+				do Screen.drawLine(ox-(sizex*n),oy+(sizey*n),sizex*(3-n)+ox,sizey*(3+n)+oy);
+				do Screen.drawLine(ox,size*(n+3)+oy,-sizex*3+ox,size*(n+3)-(sizey*3)+oy);
+				do Screen.drawLine(ox,size*(n+3)+oy,sizex*3+ox,size*(n+3)-(sizey*3)+oy);
+				do Screen.drawLine(ox-(sizex*n),oy+(size*3)-(sizey*n),ox-(sizex*n),oy+(size*6)-(sizey*n));
+				do Screen.drawLine(ox+(sizex*n),oy+(size*3)-(sizey*n),ox+(sizex*n),oy+(size*6)-(sizey*n));
+				let n = n - 1;
+			}
+			let thick = thick - 1;
+		}			
+		let ox = ox - 2;	//restore ox by minusing thick
 		return;
 	}
 }
