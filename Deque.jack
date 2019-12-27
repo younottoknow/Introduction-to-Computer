@@ -1,9 +1,9 @@
-class Queue {
+class Deque {
 	field Array data;
 	field int length;
 	field int ql;
 	field int qr;
-	constructor Queue new(int _length) {
+	constructor Deque new(int _length) {
 		let length = _length;
 		let data = Array.new(length);
 		let ql = 0;
@@ -17,7 +17,7 @@ class Queue {
 	method bool empty() {
 		return ql = qr;
 	}
-	method void push(int x) {
+	method void push_back(int x) {
 		let data[qr] = x;
 		let qr = qr + 1;
 		if (qr = length) {
@@ -25,14 +25,32 @@ class Queue {
 		}
 		return;
 	}
-	method int front() {
-		return data[ql];
+	method void push_front(int x) {
+		let data[ql] = x;
+		let ql = ql - 1;
+		if (ql = -1) {
+			let qr = length - 1;
+		}
+		return;
 	}
-	method void pop() {
+	method void pop_front() {
 		let ql = ql + 1;
 		if (ql = length) {
 			let ql = 0;
 		}
 		return;
+	}
+	method void pop_back() {
+		let qr = qr - 1;
+		if (qr = -1) {
+			let qr = length - 1;
+		}
+		return;
+	}
+	method int front() {
+		return data[ql];
+	}
+	method int back() {
+		return data[qr];
 	}
 }

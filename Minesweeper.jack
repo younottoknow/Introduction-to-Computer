@@ -2554,7 +2554,7 @@ class Minesweeper {
         var Array _b;
         var int x;
         var int y;
-        var Queue bfs;
+        var Deque bfs;
 
         let _a = viewMap[X];
         let _b = adjMap[X];
@@ -2570,12 +2570,12 @@ class Minesweeper {
             return true;
         } else { if (_b[Y] = 0) {
             // try bfs to explore map
-            let bfs = Queue.new(width + height + width + height);
-            do bfs.push(X * 32 + Y);
+            let bfs = Deque.new(width + height + width + height);
+            do bfs.push_back(X * 32 + Y);
             while (~bfs.empty()) {
                 let y = bfs.front() & 31;
                 let x = bfs.front() / 32;
-                do bfs.pop();
+                do bfs.pop_front();
 
                 let _a = viewMap[x];
                 let _b = adjMap[x];
@@ -2586,7 +2586,7 @@ class Minesweeper {
                         do Minesweeper.plot(x, y - 1, false);
                         let hidden = hidden - 1;
                         if (_a[y - 1] = 0) {
-                            do bfs.push(x * 32 + (y - 1));
+                            do bfs.push_back(x * 32 + (y - 1));
                         }
                     }
                 }
@@ -2596,7 +2596,7 @@ class Minesweeper {
                         do Minesweeper.plot(x, y + 1, false);
                         let hidden = hidden - 1;
                         if (_a[y + 1] = 0) {
-                            do bfs.push(x * 32 + (y + 1));
+                            do bfs.push_back(x * 32 + (y + 1));
                         }
                     }
                 }
@@ -2608,7 +2608,7 @@ class Minesweeper {
                         do Minesweeper.plot(x - 1, y, false);
                         let hidden = hidden - 1;
                         if (_a[y] = 0) {
-                            do bfs.push((x - 1) * 32 + y);
+                            do bfs.push_back((x - 1) * 32 + y);
                         }
                     }
                     if (y > 0) {
@@ -2617,7 +2617,7 @@ class Minesweeper {
                             do Minesweeper.plot(x - 1, y - 1, false);
                             let hidden = hidden - 1;
                             if (_a[y - 1] = 0) {
-                                do bfs.push((x - 1) * 32 + (y - 1));
+                                do bfs.push_back((x - 1) * 32 + (y - 1));
                             }
                         }
                     }
@@ -2627,7 +2627,7 @@ class Minesweeper {
                             do Minesweeper.plot(x - 1, y + 1, false);
                             let hidden = hidden - 1;
                             if (_a[y + 1] = 0) {
-                                do bfs.push((x - 1) * 32 + (y + 1));
+                                do bfs.push_back((x - 1) * 32 + (y + 1));
                             }
                         }
                     }
@@ -2640,7 +2640,7 @@ class Minesweeper {
                         do Minesweeper.plot(x + 1, y, false);
                         let hidden = hidden - 1;
                         if (_a[y] = 0) {
-                            do bfs.push((x + 1) * 32 + y);
+                            do bfs.push_back((x + 1) * 32 + y);
                         }
                     }
                     if (y > 0) {
@@ -2649,7 +2649,7 @@ class Minesweeper {
                             do Minesweeper.plot(x + 1, y - 1, false);
                             let hidden = hidden - 1;
                             if (_a[y - 1] = 0) {
-                                do bfs.push((x + 1) * 32 + (y - 1));
+                                do bfs.push_back((x + 1) * 32 + (y - 1));
                             }
                         }
                     }
@@ -2659,7 +2659,7 @@ class Minesweeper {
                             do Minesweeper.plot(x + 1, y + 1, false);
                             let hidden = hidden - 1;
                             if (_a[y + 1] = 0) {
-                                do bfs.push((x + 1) * 32 + (y + 1));
+                                do bfs.push_back((x + 1) * 32 + (y + 1));
                             }
                         }
                     }
