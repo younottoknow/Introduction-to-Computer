@@ -18,7 +18,9 @@
 		var int nowy;
 		var int row;
 		var int column;
+		var Deque buffer;
 		var boolean flag;
+		var boolean undo;
 		let size = 38;
 		let sizex = 33;
 		let sizey = 19;
@@ -30,14 +32,13 @@
 		let oy = 12;
 		let flag = true;
 		let arr = Memory.alloc(54);
+		let buffer = Deque.new(25);
 		let count = 0;
 		let tmp = 53;
 		let numofgenerate = 20;
 		do Screen.clearScreen();
-		do Output.moveCursor(12,20);
-		do Output.printString("Press any key except F4 to start.");
 		do Output.moveCursor(13,20);
-		do Output.printString("Press F4 to leave.");
+		do Output.printString("Press any key to start.");
 		while (Util.lastKey() = 0){
 			let count = count + 1;
 		}
@@ -98,6 +99,10 @@
 		do Output.printString("counterclockwise");
 		do Output.moveCursor(15,32);
 		do Output.printString("6:spin around Y-axis clockwise");
+		do Output.moveCursor(16,32);
+		do Output.printString("U:undo (at most 20 steps)");
+		do Output.moveCursor(18,32);
+		do Output.printString("Press F4 to leave.");
 		let n = 3;
 		while(n > 0){
 			if(n = 1){
@@ -141,8 +146,19 @@
 			}
 			let n = n - 1;
 		}
+		let undo = false;
 		while (flag){
+			if(buffer.size() > 20){
+				do buffer.pop_front();
+			}
 			let input = Util.lastKey();
+			if(input = 85){
+				if(~(buffer.empty())) {
+					let undo = true;
+					let input = buffer.back();
+					do buffer.pop_back();
+				}				
+			}
 			if(input = 144){	// input = F4;
 				let flag = false;} 
 			else {if((input > 48) & (input < 55)){	//input = '1'~'6'
@@ -194,6 +210,7 @@
 				}
 				do Magic_Cube.frame();
 				if(input < 51){
+					do buffer.push_back(99-input);
 					if(input = 49){
 						do Magic_Cube.move(8);
 						do Magic_Cube.move(16);
@@ -206,6 +223,7 @@
 					}
 				}
 				else{if(input < 53){
+					do buffer.push_back(103-input);
 					if(input = 51){
 						do Magic_Cube.move(7);
 						do Magic_Cube.move(12);
@@ -218,6 +236,7 @@
 					}
 				}
 				else{
+					do buffer.push_back(107-input);
 					if(input = 53){
 						do Magic_Cube.move(1);
 						do Magic_Cube.move(14);
@@ -275,6 +294,7 @@
 			}
 			else{if(input = 81){	//input = 'Q'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(65);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp*3],ox-(sizex*tmp),oy+(sizey*tmp),1,false);
@@ -293,6 +313,7 @@
 			}	
 			else{if(input = 65){	//input = 'A'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(81);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp*3],ox-(sizex*tmp),oy+(sizey*tmp),1,false);
@@ -311,6 +332,7 @@
 			}
 			else{if(input = 90){	//input = 'Z'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(88);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp+6],ox-(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,false);
@@ -335,6 +357,7 @@
 			}
 			else{if(input = 88){	//input = 'X'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(90);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp+6],ox-(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,false);
@@ -359,6 +382,7 @@
 			}
 			else{if((input > 66) & (input < 69)){	//input = 'C', 'D'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(135-input);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp*3+2],ox+(sizex*(2-tmp)),oy+(sizey*(2+tmp)),1,false);
@@ -383,6 +407,7 @@
 			}
 			else{if(input = 69){	//input = 'E'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(87);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,false);
@@ -401,6 +426,7 @@
 			}
 			else{if(input = 87){	//input = 'W'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(69);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp],ox+(sizex*tmp),oy+(sizey*tmp),1,false);
@@ -419,6 +445,7 @@
 			}
 			else{if(input = 84){	//input = 'T'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(89);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp+9],ox-(sizex*(3-tmp)),oy+(sizey*(3+tmp)),2,false);
@@ -443,6 +470,7 @@
 			}
 			else{if(input = 89){	//input = 'Y'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(84);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp+9],ox-(sizex*(3-tmp)),oy+(sizey*(3+tmp)),2,false);
@@ -467,6 +495,7 @@
 			}
 			else{if(input = 66){	//input = 'B'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(78);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp+15],ox-(sizex*(3-tmp)),oy+(size*3)+(sizey*(1+tmp)),2,false);
@@ -485,6 +514,7 @@
 			}
 			else{if(input = 78){	//input = 'N'
 				//do Magic_Cube.show(false);
+				do buffer.push_back(66);
 				let tmp = 0;
 				while(tmp < 3){
 					do Magic_Cube.display(arr[tmp+15],ox-(sizex*(3-tmp)),oy+(size*3)+(sizey*(1+tmp)),2,false);
@@ -502,7 +532,12 @@
 				//do Magic_Cube.show(true);
 			}
 			}}}}}}}}}}}}
+			if(undo){
+				do buffer.pop_back();
+				let undo = false;
+			}
 			do Sys.wait(50);
+			
 		}
 		return;
 	}
