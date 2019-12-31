@@ -35,7 +35,7 @@
 		let buffer = Deque.new(25);
 		let count = 0;
 		let tmp = 53;
-		let numofgenerate = 20;
+		let numofgenerate = 1;
 		do Screen.clearScreen();
 		do Output.moveCursor(13,20);
 		do Output.printString("Press any key to start.");
@@ -536,10 +536,34 @@
 				do buffer.pop_back();
 				let undo = false;
 			}
+			if(Magic_Cube.done()){
+				do Sys.wait(500);
+				do Screen.clearScreen();
+				do Output.moveCursor(12,20);
+				do Output.printString("Congratulation!");
+				do Sys.wait(1000);
+				let flag = false;
+			}
 			do Sys.wait(50);
 			
 		}
 		return;
+	}
+	function boolean done(){
+		var int t;
+		var int index;
+		let t = 0;
+		while(t < 6){
+			let index = 1;
+			while(index < 9){
+				if(~(arr[t*9+index] = arr[t*9])){
+					return false;
+				}
+				let index = index + 1;
+			}
+			let t = t + 1;
+		}
+		return true;
 	}
 	function void move(int now){
 		var int k;
