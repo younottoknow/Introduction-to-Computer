@@ -12,7 +12,7 @@ class Main {
 			do Output.moveCursor(11, 22);
 			do Output.printString("2 Minesweeper");
 			do Output.moveCursor(13, 22);
-			do Output.printString("3 Snake");
+			do Output.printString("3 Pac Man");
 			do Output.moveCursor(15, 22);
 			do Output.printString("Press Esc to Quit");
 			while (selecting) {
@@ -26,7 +26,7 @@ class Main {
 					do Screen.clearScreen();
 					let selecting = false;
 			    } else { if (input = 51) {
-					do Snake.main();
+					do Pac_Man.pac_man();
 					do Screen.clearScreen();
 					let selecting = false;
 				} else { if (input = 140) {
