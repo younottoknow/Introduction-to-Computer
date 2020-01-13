@@ -53,12 +53,15 @@ class Deque {
 	method int back() {
 		return data[qr - 1];
 	}
-	method int size(){
-		if(ql > qr){
+	method int size() {
+		if (ql > qr) {
 			return (qr+length-ql);
-		}
-		else{
+		} else {
 			return (qr-ql);
 		}
+	}
+	method void clear() {
+		let ql = qr;
+		return;
 	}
 }
