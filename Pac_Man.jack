@@ -1,0 +1,1597 @@
+class Pac_Man{
+    static Array map;
+    static int pacx;
+    static int pacy;
+    static int dirofpac;
+    static Array ghostx;
+    static Array ghosty;
+    // 0: left, 1: right, 2: up, 3: down
+    static Array dirofghost;
+    static int count;
+    static boolean game_started;
+    static Array bfsed;
+    static Deque bfs;
+    static int bfs_cnt;
+
+    function void init() {
+        // 15 row, 28 column
+        // size of block 17*17
+        var int i;
+        let map = Array.new(420);
+        let ghostx = Array.new(4);
+        let ghosty = Array.new(4);
+        let dirofghost = Array.new(4);
+        let pacx = 13;
+        let pacy = 10;
+        let dirofpac = 0;
+        let ghostx[0] = 12;
+        let ghosty[0] = 8;
+        let ghostx[1] = 13;
+        let ghosty[1] = 8;
+        let ghostx[2] = 14;
+        let ghosty[2] = 8;
+        let ghostx[3] = 15;
+        let ghosty[3] = 8; 
+        let count = 228;
+        // new array should be zero?
+        let bfs_cnt = 0;
+        let bfsed = Array.new(420);
+        let i = 0;
+        while (i < 420) {
+            let bfsed[i] = 0;
+            let i = i + 1;
+        }
+        let bfs = Deque.new(1260);
+        do Pac_Man.setmap();
+        return;
+    }
+
+    function void plot_map() {
+        var int row;
+        var int column;
+        do Screen.clearScreen();
+        do Screen.setColor(true);
+        let row = 0;
+        while (row < 15) {
+            let column = 0;
+            while(column < 28) {
+                if (map[row*28+column] = 2) {
+                    do Screen.drawCircle(17*column+24, 17*row+8,3);
+                } else { if (map[row*28+column] = 1) {
+                    do Screen.drawRectangle(17*column + 16,17*row,17*column+32,17*row+16);
+                }}
+                let column = column + 1;
+            }
+            let row = row + 1;
+        }
+        do Screen.drawRectangle(0, 0, 17, 17*7 + 16);
+        do Screen.drawRectangle(0, 17*9, 17, 255);
+        do Screen.drawRectangle(17*28 + 16, 0, 511, 17*7 + 16);
+        do Screen.drawRectangle(17*28 + 16, 17*9, 511, 255);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(0, 17*6, 17*2+32, 17*6+16);
+        do Screen.drawRectangle(17*25 + 16, 17*6, 17*27+49, 17*6+16);
+        do Screen.drawRectangle(0, 17*10, 17*2+32, 17*10+16);
+        do Screen.drawRectangle(17*25 + 16, 17*10, 17*27+49, 17*10+16);
+        do Screen.drawRectangle(17*12 + 16, 17*8, 17*15+32, 17*8+16);
+        return;
+    }
+
+    function void pac_man() {
+        var int numofmove;
+        var Array movedistance;
+        var boolean movepac;
+        var Array moveghost;
+        var int pixelofpacx;
+        var int pixelofpacy;
+        var Array pixelofghostx;
+        var Array pixelofghosty;
+        var int tmp;
+        var int round;
+        let movedistance = Array.new(3);
+        let movedistance[0] = 6;
+        let movedistance[1] = 5;
+        let movedistance[2] = 6;
+        let moveghost = Array.new(4);
+        let pixelofghostx = Array.new(4);
+        let pixelofghosty = Array.new(4);
+        do Pac_Man.init();
+        do Pac_Man.plot_map();
+        do Pac_Man.draw_ghost(17*12+18,17*8+2);
+        do Pac_Man.draw_ghost(17*13+18,17*8+2);
+        do Pac_Man.draw_ghost(17*14+18,17*8+2);
+        do Pac_Man.draw_ghost(17*15+18,17*8+2);
+        let game_started = true;
+        let round = 0;
+        while (game_started & (count > 0)) {
+            // move ghost out
+            if (round = 0) {
+                let ghosty[0] = 6;
+                do Screen.setColor(false);
+                do Screen.drawRectangle(12*17+18, 8*17+2, 12*17+30, 8*17 + 14);
+                do Screen.drawRectangle(12*17+18, 6*17+2, 12*17+30, 6*17 + 14);
+                do Pac_Man.draw_ghost(17*12+18,17*6+2);
+            }
+            // if (round = 5) {
+            //     let ghosty[1] = 6;
+            //     do Screen.setColor(false);
+            //     do Screen.drawRectangle(13*17+18, 8*17+2, 13*17+30, 8*17 + 14);
+            //     do Screen.drawRectangle(13*17+18, 6*17+2, 13*17+30, 6*17 + 14);
+            //     do Pac_Man.draw_ghost(17*13+18,17*6+2);
+            // }
+            // if (round = 10) {
+            //     let ghosty[2] = 6;
+            //     do Screen.setColor(false);
+            //     do Screen.drawRectangle(14*17+18, 8*17+2, 14*17 + 30, 8*17 + 14);
+            //     do Screen.drawRectangle(14*17+18, 6*17+2, 14*17+30, 6*17 + 14);
+            //     do Pac_Man.draw_ghost(17*14+18,17*6+2);
+            // }
+            // if (round = 15) {
+            //     let ghosty[3] = 6;
+            //     do Screen.setColor(false);
+            //     do Screen.drawRectangle(15*17+18, 8*17+2, 15*17 + 30, 8*17 + 14);
+            //     do Screen.drawRectangle(15*17+18, 6*17+2, 15*17+30, 6*17 + 14);
+            //     do Pac_Man.draw_ghost(17*15+18,17*6+2);
+            // }
+
+            let pixelofpacx = pacx * 17 + 18;
+            let pixelofpacy = pacy * 17 + 2;
+            let tmp = 0;
+            while(tmp < 4){
+                let pixelofghostx[tmp] = ghostx[tmp] * 17 + 18;
+                let pixelofghosty[tmp] = ghosty[tmp] * 17 + 2; 
+                let tmp = tmp + 1;
+            }
+            do Pac_Man.nextOp();
+            let movepac = Pac_Man.update_pac();
+            let moveghost[0] = Pac_Man.update_ghost0();
+            // while (true) {}
+            let moveghost[1] = Pac_Man.update_ghost1();
+            let moveghost[2] = Pac_Man.update_ghost2();
+            let moveghost[3] = Pac_Man.update_ghost3();
+            do Pac_Man.draw_pac(pixelofpacx, pixelofpacy);
+            // clear old stuff
+            let numofmove = 0;
+            while(numofmove < 3){
+                let tmp = 0;
+                if(movepac){
+                    do Screen.setColor(false);
+                    do Screen.drawRectangle(pixelofpacx, pixelofpacy, pixelofpacx + 12,pixelofpacy + 12);
+                    if(dirofpac = 0){
+                        let pixelofpacx = pixelofpacx + movedistance[numofmove];
+                    }
+                    else{if(dirofpac = 1){
+                        let pixelofpacy = pixelofpacy + movedistance[numofmove];
+                    }
+                    else{if(dirofpac = 2){
+                        let pixelofpacx = pixelofpacx - movedistance[numofmove]; 
+                    }
+                    else{if(dirofpac = 3){
+                        let pixelofpacy = pixelofpacy -movedistance[numofmove];
+                    }}}}
+                    do Pac_Man.draw_pac(pixelofpacx,pixelofpacy);
+                    if((pacx = 27) & (pacy = 8) & (dirofpac = 0)){
+                            if(numofmove = 0){
+                                do Pac_Man.draw_pac(6,17*8+2);
+                            }
+                            else{if(numofmove = 1){
+                                do Pac_Man.draw_pac(11,17*8+2);
+                            }
+                            else{if(numofmove = 2){
+                              do Pac_Man.draw_pac(17,17*8+2);  
+                            }}}
+                            do Screen.setColor(false);
+                            do Screen.drawRectangle(17*28+16,17*8,17*28+32,17*8+16);
+                            do Screen.drawRectangle(0,17*8,16,17*8+16);
+                        }
+                        if((pacx = 0) & (pacy = 8) & (dirofpac = 2)){
+                            if(numofmove = 0){
+                                do Pac_Man.draw_pac(17*27+35,17*8+2);
+                            }
+                            else{if(numofmove = 1){
+                                do Pac_Man.draw_pac(17*27+29,17*8+2);
+                            }
+                            else{if(numofmove = 2){
+                              do Pac_Man.draw_pac(17*27+24,17*8+2);  
+                            }}}
+                            do Screen.setColor(false);
+                            do Screen.drawRectangle(17*28+16,17*8,17*28+32,17*8+16);
+                            do Screen.drawRectangle(0,17*8,16,17*8+16);
+                        }
+                }
+                let tmp = 0;
+                while(tmp < 4){
+                    if(moveghost[tmp]){ 
+                        do Screen.setColor(false);
+                        do Screen.drawRectangle(pixelofghostx[tmp], pixelofghosty[tmp], pixelofghostx[tmp]+12,pixelofghosty[tmp]+12);
+                        if(map[ghostx[tmp] + (ghosty[tmp] * 28)] = 2){
+                            do Screen.setColor(true);
+                            do Screen.drawCircle(17*ghostx[tmp]+24,17*ghosty[tmp]+8,3);
+                        }
+                        if(dirofghost[tmp] = 0){
+                            let pixelofghostx[tmp] = pixelofghostx[tmp] + movedistance[numofmove];
+                        }
+                        else{if(dirofghost[tmp] = 1){
+                            let pixelofghosty[tmp] = pixelofghosty[tmp] + movedistance[numofmove];
+                        }
+                        else{if(dirofghost[tmp] = 2){
+                            let pixelofghostx[tmp] = pixelofghostx[tmp] - movedistance[numofmove]; 
+                        }
+                        else{if(dirofghost[tmp] = 3){
+                            let pixelofghosty[tmp] = pixelofghosty[tmp] -movedistance[numofmove];
+                        }}}}
+                        do Pac_Man.draw_ghost(pixelofghostx[tmp],pixelofghosty[tmp]);
+                        if((ghostx[tmp] = 27) & (ghosty[tmp] = 8) & (dirofghost[tmp] = 0)){
+                            if(numofmove = 0){
+                                do Pac_Man.draw_ghost(6,17*8+2);
+                            }
+                            else{if(numofmove = 1){
+                                do Pac_Man.draw_ghost(11,17*8+2);
+                            }
+                            else{if(numofmove = 2){
+                              do Pac_Man.draw_ghost(17,17*8+2);  
+                            }}}
+                            do Screen.setColor(false);
+                            do Screen.drawRectangle(17*28+16,17*8,17*28+32,17*8+16);
+                            do Screen.drawRectangle(16,17*8,32,17*8+16);
+                        }
+                        if((ghostx[tmp] = 0) & (ghosty[tmp] = 8) & (dirofghost[tmp] = 2)){
+                            if(numofmove = 0){
+                                do Pac_Man.draw_ghost(17*27+29,17*8+2);
+                            }
+                            else{if(numofmove = 1){
+                                do Pac_Man.draw_ghost(17*27+24,17*8+2);
+                            }
+                            else{if(numofmove = 2){
+                              do Pac_Man.draw_ghost(17*27,17*8+2);  
+                            }}}
+                            do Screen.setColor(false);
+                            do Screen.drawRectangle(17*28+16,17*8,17*28+32,17*8+16);
+                            do Screen.drawRectangle(16,17*8,32,17*8+16);
+                        }
+                    }
+                     let tmp = tmp + 1;
+                }
+                do Sys.wait(87); // let velocity not be too fast
+                let numofmove = numofmove + 1;
+            }
+            if(movepac){
+                 if(dirofpac = 0){
+                    if(pacx = 27){
+                        let pacx = 0;
+                    }
+                    else{
+                        let pacx = pacx + 1;
+                    }
+                }
+                else{if(dirofpac = 1){
+                    let pacy = pacy + 1;
+                }
+                else{if(dirofpac = 2){
+                    if(pacx = 0){
+                        let pacx = 27;
+                    }
+                    else{
+                        let pacx = pacx - 1; 
+                    }
+                }
+                else{if(dirofpac = 3){
+                    let pacy = pacy - 1;
+                }}}}
+                if(map[pacx+(pacy*28)] = 2){
+                    let map[pacx+(pacy*28)] = 0;
+                    let count = count - 1;
+                }
+            }
+            let tmp = 0;
+            while(tmp < 4){
+                if(moveghost[tmp]){
+                    if(dirofghost[tmp] = 0){
+                        if(ghostx[tmp] = 27){
+                            let ghostx[tmp] = 0;
+                        }
+                        else{
+                            let ghostx[tmp] = ghostx[tmp] + 1;
+                        }
+                    }
+                    else{if(dirofghost[tmp] = 1){
+                        let ghosty[tmp] = ghosty[tmp] + 1;
+                    }
+                    else{if(dirofghost[tmp] = 2){
+                        if(ghostx[tmp] = 0){
+                            let ghostx[tmp] = 27;
+                        }
+                        else{
+                            let ghostx[tmp] = ghostx[tmp] - 1; 
+                        }
+                    }
+                    else{if(dirofghost[tmp] = 3){
+                        let ghosty[tmp] = ghosty[tmp] - 1;
+                    }}}}
+                }
+                if(pacx = ghostx[tmp] & pacy = ghosty[tmp]){
+                    let game_started = false;
+                }
+                let tmp = tmp + 1;
+            }
+            let round = round + 1;
+        }
+        do map.dispose();
+        do bfs.dispose();
+        do ghostx.dispose();
+        do ghosty.dispose();
+        do bfsed.dispose();
+        return;
+    }
+
+    function void nextOp() {
+        var int input;
+        let input = Util.lastKey();
+        if(input = 130){	//left
+            let dirofpac = 2;
+        }
+        else{if(input = 131){ //up
+            let dirofpac = 3;
+        }
+        else{if(input = 132){ //right
+            let dirofpac = 0;
+        }
+        else{if(input = 133){ //down
+            let dirofpac = 1;
+        }
+        else{if(input = 144){ //F4
+            let game_started = false;
+        }}}}}
+        return;
+    }
+    function boolean update_pac(){
+        if(dirofpac = 0){
+            if(pacx = 27 & pacy = 8){
+                return true;
+            }
+            if(pacx = 27){
+                return false;
+            }
+            if(map[(pacx+1)+(pacy*28)] = 1){
+                return false;
+            }
+            return true;
+        }
+        else{if(dirofpac = 1){
+            if(pacy = 14){
+               return false; 
+            } 
+            if(map[pacx+((pacy+1)*28)] = 1){
+                return false;
+            }
+            return true;
+        }
+        else{if(dirofpac = 2){
+            if(pacx = 0 & pacy  = 8){
+                return true;
+            }
+            if(pacx = 0){
+                return false;
+            }
+            if(map[(pacx-1)+(pacy*28)] = 1){
+                return false;
+            }
+            return true;
+        }
+        else{if(dirofpac = 3){
+            if(pacy = 0){
+                return false;
+            }
+            if(map[pacx+((pacy-1)*28)] = 1){
+                return false;
+            }
+            return true;
+        }}}}
+        return true;
+    }
+    function boolean bfs_ghost(int idx, int tarx, int tary) {
+        var int ori;
+        var int x;
+        var int y;
+        var boolean need_bfs;
+        let bfs_cnt = bfs_cnt + 1;
+        
+        if (map[ghostx[idx] + (ghosty[idx] * 28)] = 1) {
+            do Sys.halt();
+        }
+
+        let bfsed[ghostx[idx] + (ghosty[idx] * 28)] = bfs_cnt;
+
+        if ((ghostx[idx] = 0) & (ghosty[idx] = 8)) {
+            // special left
+            let bfsed[251] = bfs_cnt;
+            do bfs.push_back(27);
+            do bfs.push_back(8);
+            do bfs.push_back(0);
+        } else { if ((ghostx[idx] > 0) & (~(map[(ghostx[idx]-1) + (ghosty[idx] * 28)] = 1))) {
+            // left
+            let bfsed[(ghostx[idx]-1) + (ghosty[idx] * 28)] = bfs_cnt;
+            do bfs.push_back(ghostx[idx] - 1);
+            do bfs.push_back(ghosty[idx]);
+            do bfs.push_back(0);
+        }}
+        if ((ghostx[idx] = 27) & (ghosty[idx] = 8)) {
+            let bfsed[224] = bfs_cnt;
+            do bfs.push_back(0);
+            do bfs.push_back(8);
+            do bfs.push_back(2);
+        } else { if ( (ghostx[idx] < 27) & (~(map[(ghostx[idx]+1) + (ghosty[idx] * 28)] = 1)) ) {
+            // right
+            let bfsed[(ghostx[idx]+1) + (ghosty[idx] * 28)] = bfs_cnt;
+            do bfs.push_back(ghostx[idx] + 1);
+            do bfs.push_back(ghosty[idx]);
+            do bfs.push_back(2);
+        }}
+        if ((ghosty[idx] > 0) & (~(map[ghostx[idx] + ((ghosty[idx]-1) * 28)] = 1))) {
+            // up
+            let bfsed[ghostx[idx] + ((ghosty[idx] - 1) * 28)] = bfs_cnt;
+            do bfs.push_back(ghostx[idx]);
+            do bfs.push_back(ghosty[idx] - 1);
+            do bfs.push_back(3);
+        }
+        if ((ghosty[idx] < 14) & (~(map[ghostx[idx] + ((ghosty[idx]+1) * 28)] = 1))) {
+            // down
+            let bfsed[ghostx[idx] + ((ghosty[idx] + 1) * 28)] = bfs_cnt;
+            do bfs.push_back(ghostx[idx]);
+            do bfs.push_back(ghosty[idx] + 1);
+            do bfs.push_back(1);
+        }
+        let need_bfs = true;
+        while ((~bfs.empty()) & need_bfs) {
+            let x = bfs.front();
+            do bfs.pop_front();
+            let y = bfs.front();
+            do bfs.pop_front();
+            let ori = bfs.front();
+            do bfs.pop_front();
+            
+            if (need_bfs & (x = 0) & (y = 8) & (~(bfsed[251] = bfs_cnt))) {
+                // special left
+                let bfsed[251] = bfs_cnt;
+                do bfs.push_back(27);
+                do bfs.push_back(y);
+                do bfs.push_back(ori);
+                if ((27=tarx) & (y=tary)) {
+                    let need_bfs = false;
+                }
+            }
+            if (need_bfs & (x > 0) & (~(bfsed[(x - 1) + (y * 28)] = bfs_cnt)) & (~(map[(x - 1) + (y * 28)] = 1))) {
+                // left
+                let bfsed[(x - 1) + (y * 28)] = bfs_cnt;
+                do bfs.push_back(x - 1);
+                do bfs.push_back(y);
+                do bfs.push_back(ori);
+                if (((x - 1)=tarx) & (y=tary)) {
+                    let need_bfs = false;
+                }
+            }
+            if (need_bfs & (x = 27) & (y = 8) & (~(bfsed[224] = bfs_cnt))) {
+                // special right
+                let bfsed[224] = bfs_cnt;
+                do bfs.push_back(0);
+                do bfs.push_back(y);
+                do bfs.push_back(ori);
+                if ((0=tarx) & (y=tary)) {
+                    let need_bfs = false;
+                }
+            }
+            if (need_bfs & (x < 27) & (~(bfsed[(x + 1) + (y * 28)] = bfs_cnt)) & (~(map[(x + 1) + (y * 28)] = 1))) {
+                // right                
+                let bfsed[(x + 1) + (y * 28)] = bfs_cnt;
+                do bfs.push_back(x + 1);
+                do bfs.push_back(y);
+                do bfs.push_back(ori);
+                if (((x + 1)=tarx) & (y=tary)) {
+                    let need_bfs = false;
+                }
+            }
+            if (need_bfs & (y > 0) & (~(bfsed[x + ((y - 1) * 28)] = bfs_cnt)) & (~(map[x + ((y - 1) * 28)] = 1))) {
+                // up
+                let bfsed[x + ((y - 1) * 28)] = bfs_cnt;
+                do bfs.push_back(x);
+                do bfs.push_back(y - 1);
+                do bfs.push_back(ori);
+                if ((x=tarx) & ((y - 1)=tary)) {
+                    let need_bfs = false;
+                }
+            }
+            if (need_bfs & (y < 14) & (~(bfsed[x + ((y + 1) * 28)] = bfs_cnt)) & (~map[x + ((y + 1) * 28)] = 1)) {
+                // down
+                let bfsed[x + ((y + 1) * 28)] = bfs_cnt;
+                do bfs.push_back(x);
+                do bfs.push_back(y + 1);
+                do bfs.push_back(ori);
+                if ((x=tarx) & ((y + 1)=tary)) {
+                    let need_bfs = false;
+                }
+            }
+        }
+        // end
+        do bfs.clear();
+        let dirofghost[idx] = ori;
+        return ~need_bfs;
+    }
+    function boolean update_ghost0() {
+        // ghost 0: shortest path to pacman
+        //          (optional) become more fast
+        return Pac_Man.bfs_ghost(0, pacx, pacy);
+    }
+    function boolean update_ghost1() {
+        // ghost 1: aim for pacman's 2 block
+        var int tarx;
+        var int tary;
+        let tarx = pacx;
+        let tary = pacy;
+        if (dirofghost[1] = 0) {
+            // left
+            if ((tarx = 0) & (tary = 8)) {
+                let tarx = 27;
+            } else { if ((tarx > 0) & (~(map[(tarx - 1) + (tary * 28)] = 1))) {
+                let tarx = tarx - 1;
+            }}
+            if ((tarx = 0) & (tary = 8)) {
+                let tarx = 27;
+            } else { if ((tarx > 0) & (~(map[(tarx - 1) + (tary * 28)] = 1))) {
+                let tarx = tarx - 1;
+            }}
+        } else { if (dirofghost[1] = 1) {
+            // right
+            if ((tarx = 27) & (tary = 8)) {
+                let tarx = 0;
+            } else { if ((tarx < 27) & (~(map[(tarx + 1) + (tary * 28)] = 1))) {
+                let tarx = tarx + 1;
+            }}
+            if ((tarx = 27) & (tary = 8)) {
+                let tarx = 0;
+            } else { if ((tarx < 27) & (~(map[(tarx + 1) + (tary * 28)] = 1))) {
+                let tarx = tarx + 1;
+            }}
+        } else { if (dirofghost[1] = 2) {
+            // up
+            if ( (tary > 0) & (~(map[tarx + ((tary - 1) * 28)] = 1)) ) {
+                let tary = tary - 1;
+            }
+            if ( (tary > 0) & (~(map[tarx + ((tary - 1) * 28)] = 1)) ) {
+                let tary = tary - 1;
+            }
+        } else { if (dirofghost[1] = 3) {
+            // down
+            if ( (tary < 14) & (~(map[tarx + ((tary + 1) * 28)])) ) {
+                let tary = tary + 1;
+            }
+            if ((tary < 14) & (~(map[tarx + ((tary + 1) * 28)]))) {
+                let tary = tary + 1;
+            }
+        }}}}
+        return Pac_Man.bfs_ghost(1, tarx, tary);
+    }
+    function boolean update_ghost2() {
+        // ghost 2: twice (ghost 0 - pacman)
+        var int x;
+        var int y;
+        var int tarx;
+        var int tary;
+        var bool need_bfs;
+        let tarx = pacx + pacx - ghostx[0];
+        let tarx = pacy + pacy - ghosty[0];
+        if (tary < 0) {
+            let tary = tary + 28;
+        }
+        if (tarx > 27) {
+            let tarx = tarx - 28;
+        }
+        if (tary < 0) {
+            let tary = tary + 15;
+        }
+        if (tary > 14) {
+            let tary = tary - 15;
+        }
+        
+        if (map[tarx + (tary * 28)] = 1) {
+            let bfs_cnt = bfs_cnt + 1;
+            let bfsed[tarx + (tary * 28)] = bfs_cnt;
+            do bfs.push_back(tarx);
+            do bfs.push_back(tary);
+            let need_bfs = true;
+            while ((~bfs.empty()) & need_bfs) {
+                let x = bfs.front();
+                do bfs.pop_front();
+                let y = bfs.front();
+                do bfs.pop_front();
+                if ((x > 0) & (~(bfsed[(x - 1) + (y * 28)] = bfs_cnt))) {
+                    // left
+                    let bfsed[(x - 1) + (y * 28)] = bfs_cnt;
+                    do bfs.push_back(x - 1);
+                    do bfs.push_back(y);
+                    if ((~(map[(x - 1) + (y * 28)] = 1))) {
+                        let tarx = x - 1;
+                        let tary = y;
+                        let need_bfs = false;
+                    }
+                }
+                if ((x < 27) & (~(bfsed[(x + 1) + (y * 28)] = bfs_cnt))) {
+                    // right                
+                    let bfsed[(x + 1) + (y * 28)] = bfs_cnt;
+                    do bfs.push_back(x + 1);
+                    do bfs.push_back(y);
+                    if ((~(map[(x + 1) + (y * 28)] = 1))) {
+                        let tarx = x + 1;
+                        let tary = y;
+                        let need_bfs = false;
+                    }
+                }
+                if ((y > 0) & (~(bfsed[x + ((y - 1) * 28)] = bfs_cnt))) {
+                    // up
+                    let bfsed[x + ((y - 1) * 28)] = bfs_cnt;
+                    do bfs.push_back(x);
+                    do bfs.push_back(y - 1);
+                    if ((~(map[x + ((y - 1) * 28)] = 1))) {
+                        let tarx = x;
+                        let tary = y - 1;
+                        let need_bfs = false;
+                    }
+                }
+                if ((y < 14) & (~(bfsed[x + ((y + 1) * 28)] = bfs_cnt))) {
+                    // down
+                    let bfsed[x + ((y + 1) * 28)] = bfs_cnt;
+                    do bfs.push_back(x);
+                    do bfs.push_back(y + 1);
+                    if ((~map[x + ((y + 1) * 28)] = 1)) {
+                        let tarx = x;
+                        let tary = y + 1;
+                        let need_bfs = false;
+                    }
+                }
+            }
+        }
+        do bfs.clear();
+        return Pac_Man.bfs_ghost(2, tarx, tary);
+    }
+    function boolean update_ghost3() {
+        // ghost 3: like ghost 0  | if dis > 8
+        //          left and down | else
+        if ( (Math.abs(ghostx[3] - pacx) + Math.abs(ghosty[3] - pacy)) > 8) {
+            return Pac_Man.bfs_ghost(3, pacx, pacy);
+        }
+        if ((ghosty[3] < 14) & (~(map[ghostx[3] + ((ghosty[3]+1) * 28)] = 1))) {
+            // down
+            let dirofghost[3] = 1;
+            return true;
+        } else { if ((ghostx[3] > 0) & (~(map[(ghostx[3]-1) + (ghosty[3] * 28)] = 1))) {
+            // left
+            let dirofghost[3] = 0;
+            return true;
+        } else { if ((ghostx[3] = 0) * (ghosty[3] = 8)) {
+            let dirofghost[3] = 0;
+            return true;
+        }}}
+        return false;
+    }
+
+    function void draw_pac(int x, int y){
+        var int tmp;
+        let tmp = 3;
+        do Screen.setColor(true);
+        do Screen.drawCircle(x+6,y+6,6);
+        do Screen.setColor(false);
+        if(dirofpac < 2){
+            if(dirofpac = 0){
+                while(tmp < 10){
+                    do Screen.drawLine(x+6, y+6, x+12, y+tmp);
+                    let tmp = tmp + 1;
+                }
+            }
+            else{
+                while(tmp < 10){
+                    do Screen.drawLine(x+6, y+6, x+tmp, y+12);
+                    let tmp = tmp + 1;
+                }
+            }
+            
+        }
+        else{
+            if(dirofpac = 2){
+                while(tmp < 10){
+                    do Screen.drawLine(x+6, y+6, x, y+tmp);
+                    let tmp = tmp + 1;
+                }
+            }
+            else{
+                while(tmp < 10){
+                    do Screen.drawLine(x+6, y+6, x+tmp, y);
+                    let tmp = tmp + 1;
+                }
+            }
+        }		
+        return;
+    }
+    
+    function void draw_ghost(int x, int y){
+        do Screen.setColor(true);
+        do Screen.drawLine(x+3,y,x+9,y);
+        do Screen.drawLine(x+2,y+1,x+10,y+1);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawLine(x+1,y+2,x+11,y+2);		
+        do Screen.drawLine(x,y+3,x+2,y+3);
+        do Screen.drawLine(x+5,y+3,x+7,y+3);
+        do Screen.drawLine(x+10,y+3,x+12,y+3);
+        do Screen.drawRectangle(x,y+4,x+1,y+5);
+        do Screen.drawLine(x+6,y+4,x+6,y+5);
+        do Screen.drawRectangle(x+11,y+4,x+12,y+5);
+        do Screen.drawLine(x,y+6,x+2,y+6);
+        do Screen.drawLine(x+5,y+6,x+7,y+6);
+        do Screen.drawLine(x+10,y+6,x+12,y+6);
+        do Screen.drawRectangle(x,y+7,x+12,y+10);
+        do Screen.drawLine(x,y+11,x+1,y+11);
+        do Screen.drawLine(x+3,y+11,x+5,y+11);
+        do Screen.drawLine(x+7,y+11,x+9,y+11);
+        do Screen.drawLine(x+11,y+11,x+12,y+11);
+        do Screen.drawPixel(x,y+12);
+        do Screen.drawPixel(x+4,y+12);
+        do Screen.drawPixel(x+8,y+12);
+        do Screen.drawPixel(x+12,y+12);
+        do Screen.drawRectangle(x+3,y+4,x+4,y+5);
+        do Screen.drawRectangle(x+8,y+4,x+9,y+5);
+        return;
+    }
+    function void setmap() {
+        // 1: wall, 0: nothing, 2: dot
+        let map[0] = 2;
+        let map[1] = 2;
+        let map[2] = 2;
+        let map[3] = 2;
+        let map[4] = 2;
+        let map[5] = 2;
+        let map[6] = 2;
+        let map[7] = 2;
+        let map[8] = 2;
+        let map[9] = 2;
+        let map[10] = 2;
+        let map[11] = 2;
+        let map[12] = 2;
+        let map[13] = 1;
+        let map[14] = 1;
+        let map[15] = 2;
+        let map[16] = 2;
+        let map[17] = 2;
+        let map[18] = 2;
+        let map[19] = 2;
+        let map[20] = 2;
+        let map[21] = 2;
+        let map[22] = 2;
+        let map[23] = 2;
+        let map[24] = 2;
+        let map[25] = 2;
+        let map[26] = 2;
+        let map[27] = 2;
+        let map[28] = 2;
+        let map[29] = 1;
+        let map[30] = 1;
+        let map[31] = 1;
+        let map[32] = 2;
+        let map[33] = 1;
+        let map[34] = 1;
+        let map[35] = 1;
+        let map[36] = 2;
+        let map[37] = 1;
+        let map[38] = 1;
+        let map[39] = 1;
+        let map[40] = 2;
+        let map[41] = 1;
+        let map[42] = 1;
+        let map[43] = 2;
+        let map[44] = 1;
+        let map[45] = 1;
+        let map[46] = 1;
+        let map[47] = 2;
+        let map[48] = 1;
+        let map[49] = 1;
+        let map[50] = 1;
+        let map[51] = 2;
+        let map[52] = 1;
+        let map[53] = 1;
+        let map[54] = 1;
+        let map[55] = 2;
+        let map[56] = 2;
+        let map[57] = 2;
+        let map[58] = 2;
+        let map[59] = 2;
+        let map[60] = 2;
+        let map[61] = 2;
+        let map[62] = 2;
+        let map[63] = 2;
+        let map[64] = 2;
+        let map[65] = 2;
+        let map[66] = 2;
+        let map[67] = 2;
+        let map[68] = 2;
+        let map[69] = 2;
+        let map[70] = 2;
+        let map[71] = 2;
+        let map[72] = 2;
+        let map[73] = 2;
+        let map[74] = 2;
+        let map[75] = 2;
+        let map[76] = 2;
+        let map[77] = 2;
+        let map[78] = 2;
+        let map[79] = 2;
+        let map[80] = 2;
+        let map[81] = 2;
+        let map[82] = 2;
+        let map[83] = 2;
+        let map[84] = 2;
+        let map[85] = 1;
+        let map[86] = 1;
+        let map[87] = 1;
+        let map[88] = 2;
+        let map[89] = 1;
+        let map[90] = 1;
+        let map[91] = 1;
+        let map[92] = 2;
+        let map[93] = 1;
+        let map[94] = 2;
+        let map[95] = 1;
+        let map[96] = 1;
+        let map[97] = 1;
+        let map[98] = 1;
+        let map[99] = 1;
+        let map[100] = 1;
+        let map[101] = 2;
+        let map[102] = 1;
+        let map[103] = 2;
+        let map[104] = 1;
+        let map[105] = 1;
+        let map[106] = 1;
+        let map[107] = 2;
+        let map[108] = 1;
+        let map[109] = 1;
+        let map[110] = 1;
+        let map[111] = 2;
+        let map[112] = 2;
+        let map[113] = 2;
+        let map[114] = 2;
+        let map[115] = 2;
+        let map[116] = 2;
+        let map[117] = 2;
+        let map[118] = 2;
+        let map[119] = 1;
+        let map[120] = 2;
+        let map[121] = 1;
+        let map[122] = 2;
+        let map[123] = 2;
+        let map[124] = 2;
+        let map[125] = 1;
+        let map[126] = 1;
+        let map[127] = 2;
+        let map[128] = 2;
+        let map[129] = 2;
+        let map[130] = 1;
+        let map[131] = 2;
+        let map[132] = 1;
+        let map[133] = 2;
+        let map[134] = 2;
+        let map[135] = 2;
+        let map[136] = 2;
+        let map[137] = 2;
+        let map[138] = 2;
+        let map[139] = 2;
+        let map[140] = 1;
+        let map[141] = 1;
+        let map[142] = 1;
+        let map[143] = 1;
+        let map[144] = 2;
+        let map[145] = 1;
+        let map[146] = 2;
+        let map[147] = 1;
+        let map[148] = 2;
+        let map[149] = 1;
+        let map[150] = 1;
+        let map[151] = 1;
+        let map[152] = 2;
+        let map[153] = 1;
+        let map[154] = 1;
+        let map[155] = 2;
+        let map[156] = 1;
+        let map[157] = 1;
+        let map[158] = 1;
+        let map[159] = 2;
+        let map[160] = 1;
+        let map[161] = 2;
+        let map[162] = 1;
+        let map[163] = 2;
+        let map[164] = 1;
+        let map[165] = 1;
+        let map[166] = 1;
+        let map[167] = 1;
+        let map[168] = 1;
+        let map[169] = 1;
+        let map[170] = 1;
+        let map[171] = 1;
+        let map[172] = 2;
+        let map[173] = 1;
+        let map[174] = 2;
+        let map[175] = 1;
+        let map[176] = 2;
+        let map[177] = 1;
+        let map[178] = 2;
+        let map[179] = 2;
+        let map[180] = 2;
+        let map[181] = 2;
+        let map[182] = 2;
+        let map[183] = 2;
+        let map[184] = 2;
+        let map[185] = 2;
+        let map[186] = 1;
+        let map[187] = 2;
+        let map[188] = 1;
+        let map[189] = 2;
+        let map[190] = 1;
+        let map[191] = 2;
+        let map[192] = 1;
+        let map[193] = 1;
+        let map[194] = 1;
+        let map[195] = 1;
+        let map[196] = 1;
+        let map[197] = 1;
+        let map[198] = 1;
+        let map[199] = 1;
+        let map[200] = 2;
+        let map[201] = 1;
+        let map[202] = 2;
+        let map[203] = 1;
+        let map[204] = 2;
+        let map[205] = 1;
+        let map[206] = 2;
+        let map[207] = 1;
+        let map[208] = 1;
+        let map[209] = 1;
+        let map[210] = 1;
+        let map[211] = 1;
+        let map[212] = 1;
+        let map[213] = 2;
+        let map[214] = 1;
+        let map[215] = 2;
+        let map[216] = 1;
+        let map[217] = 2;
+        let map[218] = 1;
+        let map[219] = 2;
+        let map[220] = 1;
+        let map[221] = 1;
+        let map[222] = 1;
+        let map[223] = 1;
+        let map[224] = 2;
+        let map[225] = 2;
+        let map[226] = 2;
+        let map[227] = 2;
+        let map[228] = 2;
+        let map[229] = 2;
+        let map[230] = 2;
+        let map[231] = 2;
+        let map[232] = 2;
+        let map[233] = 2;
+        let map[234] = 2;
+        let map[235] = 1;
+        let map[236] = 0;
+        let map[237] = 0;
+        let map[238] = 0;
+        let map[239] = 0;
+        let map[240] = 1;
+        let map[241] = 2;
+        let map[242] = 2;
+        let map[243] = 2;
+        let map[244] = 2;
+        let map[245] = 2;
+        let map[246] = 2;
+        let map[247] = 2;
+        let map[248] = 2;
+        let map[249] = 2;
+        let map[250] = 2;
+        let map[251] = 2;
+        let map[252] = 1;
+        let map[253] = 1;
+        let map[254] = 1;
+        let map[255] = 1;
+        let map[256] = 2;
+        let map[257] = 1;
+        let map[258] = 2;
+        let map[259] = 1;
+        let map[260] = 1;
+        let map[261] = 1;
+        let map[262] = 2;
+        let map[263] = 1;
+        let map[264] = 1;
+        let map[265] = 1;
+        let map[266] = 1;
+        let map[267] = 1;
+        let map[268] = 1;
+        let map[269] = 2;
+        let map[270] = 1;
+        let map[271] = 1;
+        let map[272] = 1;
+        let map[273] = 2;
+        let map[274] = 1;
+        let map[275] = 2;
+        let map[276] = 1;
+        let map[277] = 1;
+        let map[278] = 1;
+        let map[279] = 1;
+        let map[280] = 1;
+        let map[281] = 1;
+        let map[282] = 1;
+        let map[283] = 1;
+        let map[284] = 2;
+        let map[285] = 1;
+        let map[286] = 2;
+        let map[287] = 2;
+        let map[288] = 2;
+        let map[289] = 2;
+        let map[290] = 2;
+        let map[291] = 2;
+        let map[292] = 2;
+        let map[293] = 2;
+        let map[294] = 2;
+        let map[295] = 2;
+        let map[296] = 2;
+        let map[297] = 2;
+        let map[298] = 2;
+        let map[299] = 2;
+        let map[300] = 2;
+        let map[301] = 2;
+        let map[302] = 1;
+        let map[303] = 2;
+        let map[304] = 1;
+        let map[305] = 1;
+        let map[306] = 1;
+        let map[307] = 1;
+        let map[308] = 1;
+        let map[309] = 1;
+        let map[310] = 1;
+        let map[311] = 1;
+        let map[312] = 2;
+        let map[313] = 1;
+        let map[314] = 1;
+        let map[315] = 1;
+        let map[316] = 2;
+        let map[317] = 1;
+        let map[318] = 1;
+        let map[319] = 1;
+        let map[320] = 2;
+        let map[321] = 1;
+        let map[322] = 1;
+        let map[323] = 2;
+        let map[324] = 1;
+        let map[325] = 1;
+        let map[326] = 1;
+        let map[327] = 2;
+        let map[328] = 1;
+        let map[329] = 1;
+        let map[330] = 1;
+        let map[331] = 2;
+        let map[332] = 1;
+        let map[333] = 1;
+        let map[334] = 1;
+        let map[335] = 1;
+        let map[336] = 2;
+        let map[337] = 2;
+        let map[338] = 2;
+        let map[339] = 2;
+        let map[340] = 2;
+        let map[341] = 2;
+        let map[342] = 2;
+        let map[343] = 1;
+        let map[344] = 2;
+        let map[345] = 2;
+        let map[346] = 2;
+        let map[347] = 2;
+        let map[348] = 2;
+        let map[349] = 1;
+        let map[350] = 1;
+        let map[351] = 2;
+        let map[352] = 2;
+        let map[353] = 2;
+        let map[354] = 2;
+        let map[355] = 2;
+        let map[356] = 1;
+        let map[357] = 2;
+        let map[358] = 2;
+        let map[359] = 2;
+        let map[360] = 2;
+        let map[361] = 2;
+        let map[362] = 2;
+        let map[363] = 2;
+        let map[364] = 2;
+        let map[365] = 1;
+        let map[366] = 1;
+        let map[367] = 1;
+        let map[368] = 1;
+        let map[369] = 1;
+        let map[370] = 2;
+        let map[371] = 1;
+        let map[372] = 2;
+        let map[373] = 1;
+        let map[374] = 1;
+        let map[375] = 1;
+        let map[376] = 2;
+        let map[377] = 1;
+        let map[378] = 1;
+        let map[379] = 2;
+        let map[380] = 1;
+        let map[381] = 1;
+        let map[382] = 1;
+        let map[383] = 2;
+        let map[384] = 1;
+        let map[385] = 2;
+        let map[386] = 1;
+        let map[387] = 1;
+        let map[388] = 1;
+        let map[389] = 1;
+        let map[390] = 1;
+        let map[391] = 2;
+        let map[392] = 2;
+        let map[393] = 2;
+        let map[394] = 2;
+        let map[395] = 2;
+        let map[396] = 2;
+        let map[397] = 2;
+        let map[398] = 2;
+        let map[399] = 2;
+        let map[400] = 2;
+        let map[401] = 1;
+        let map[402] = 1;
+        let map[403] = 1;
+        let map[404] = 2;
+        let map[405] = 2;
+        let map[406] = 2;
+        let map[407] = 2;
+        let map[408] = 1;
+        let map[409] = 1;
+        let map[410] = 1;
+        let map[411] = 2;
+        let map[412] = 2;
+        let map[413] = 2;
+        let map[414] = 2;
+        let map[415] = 2;
+        let map[416] = 2;
+        let map[417] = 2;
+        let map[418] = 2;
+        let map[419] = 2;
+        return;
+    }
+}
