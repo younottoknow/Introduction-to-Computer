@@ -1244,6 +1244,30 @@ class Minesweeper {
                 return;
             }}}
         }
+        // dispose everything
+        let i = 0;
+        while (i < height) {
+            let _a = mineMap[i];
+            do _a.dispose();
+            let i = i + 1;
+        }
+        do mineMap.dispose();
+
+        let i = 0;
+        while (i < height) {
+            let _a = adjMap[i];
+            do _a.dispose();
+            let i = i + 1;
+        }
+        do adjMap.dispose();
+        
+        let i = 0;
+        while (i < height) {
+            let _a = viewMap[i];
+            do _a.dispose();
+            let i = i + 1;
+        }
+        do viewMap.dispose();
         return;
     }
 
@@ -1315,6 +1339,7 @@ class Minesweeper {
                 }}}
                 let hidden = height * width - mines;
                 do Minesweeper.init();
+                
                 do Minesweeper.menu();
             } else { if (selected = 144) {
                 let not_quit = false;
@@ -1325,31 +1350,6 @@ class Minesweeper {
             let seed = seed + 1;
             let seed = seed & 32767;
         }
-        // dispose everything
-
-        let i = 0;
-        while (i < height) {
-            let _a = mineMap[i];
-            do _a.dispose();
-            let i = i + 1;
-        }
-        do mineMap.dispose();
-
-        let i = 0;
-        while (i < height) {
-            let _a = adjMap[i];
-            do _a.dispose();
-            let i = i + 1;
-        }
-        do adjMap.dispose();
-        
-        let i = 0;
-        while (i < height) {
-            let _a = viewMap[i];
-            do _a.dispose();
-            let i = i + 1;
-        }
-        do viewMap.dispose();
         return;
     } 
 }
