@@ -986,7 +986,6 @@ class Minesweeper {
         let mineMap = Array.new(height);
         let i = 0;
         while (i < height) {
-            let j = 0;
             let mineMap[i] = Array.new(width);
             let i = i + 1;
         }
@@ -1290,6 +1289,8 @@ class Minesweeper {
     function void main() {
         var int seed;
         var int selected;
+        var int i;
+        var Array _a;
         var bool not_quit;
 
         let seed = 0;
@@ -1324,6 +1325,31 @@ class Minesweeper {
             let seed = seed + 1;
             let seed = seed & 32767;
         }
+        // dispose everything
+
+        let i = 0;
+        while (i < height) {
+            let _a = mineMap[i];
+            do _a.dispose();
+            let i = i + 1;
+        }
+        do mineMap.dispose();
+
+        let i = 0;
+        while (i < height) {
+            let _a = adjMap[i];
+            do _a.dispose();
+            let i = i + 1;
+        }
+        do adjMap.dispose();
+        
+        let i = 0;
+        while (i < height) {
+            let _a = viewMap[i];
+            do _a.dispose();
+            let i = i + 1;
+        }
+        do viewMap.dispose();
         return;
     } 
 }

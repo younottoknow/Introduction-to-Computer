@@ -1,3 +1,6 @@
 # ignore compiled vm file
 *.vm
 *.swp
+*.png
+*.jpg
+*.jfif
