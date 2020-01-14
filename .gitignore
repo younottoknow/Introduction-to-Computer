@@ -5,3 +5,4 @@
 *.jpg
 *.jfif
 *map.xlsx
+tools/venv/*
