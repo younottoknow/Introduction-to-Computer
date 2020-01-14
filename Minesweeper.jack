@@ -11,6 +11,7 @@ class Minesweeper {
     static int width;
     static int mines;
     static int hidden;
+    static int flags;
 
     function void plot(int x, int y, bool chosen) {
         // plot specific box base on viewMap
@@ -1219,6 +1220,10 @@ class Minesweeper {
             let i = i + 1;
         }
 
+        do Output.moveCursor(0, 0);
+        do Output.printString("Mines: ");
+        do Output.printInt(flags);
+
         let not_quit = true;
         while (not_quit) {
             let i = Minesweeper.nextOp();
@@ -1240,6 +1245,10 @@ class Minesweeper {
                 }
             } else { if (i = 32) {
                 do Minesweeper.mark();
+                let flags = flags - 1;
+                do Output.moveCursor(0, 0);
+                do Output.printString("Mines: ");               
+                do Output.printInt(flags);
             } else { if (i = 81) {
                 return;
             }}}
@@ -1328,14 +1337,17 @@ class Minesweeper {
                     let height = 9;
                     let width = 18;
                     let mines = 23;
+                    let flags = mines;
                 } else { if (selected = 66) {
                     let height = 12;
                     let width = 24;
                     let mines = 57;
+                    let flags = mines;
                 } else { if (selected = 67) { 
-                    let height = 15;
+                    let height = 14;
                     let width = 30;
                     let mines = 90;
+                    let flags = mines;
                 }}}
                 let hidden = height * width - mines;
                 do Minesweeper.init();
