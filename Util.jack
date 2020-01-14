@@ -1,6 +1,7 @@
 class Util {
 	// utility
 	static int _lastKey_key;
+	static int _lastVaildKey;
 	function int lastKey() {
 		var int c;
 		let c = Keyboard.keyPressed();
@@ -10,6 +11,14 @@ class Util {
 			let _lastKey_key = c;
 			return c;
 		}
+	}
+	function int lastValidKey() {
+		var int c;
+		let c = Keyboard.keyPressed();
+		if (~(c = 0)) {
+			let _lastVaildKey = c;
+		}
+		return _lastVaildKey;
 	}
 	function int modulo(int a, int b) {
 		return a - ( a / b * b );

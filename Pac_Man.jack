@@ -87,6 +87,7 @@ class Pac_Man{
         var Array pixelofghostx;
         var Array pixelofghosty;
         var int tmp;
+        var int tick;
         var int round;
         let movedistance = Array.new(3);
         let movedistance[0] = 6;
@@ -137,6 +138,8 @@ class Pac_Man{
                 do Pac_Man.draw_ghost(255+18,102+2);
             }
 
+            do Pac_Man.nextOp();
+
             let pixelofpacx = pacx * 17 + 18;
             let pixelofpacy = pacy * 17 + 2;
             let tmp = 0;
@@ -146,7 +149,8 @@ class Pac_Man{
                 let tmp = tmp + 1;
             }
 
-            do Pac_Man.nextOp();
+            do Pac_Man.draw_pac(pixelofpacx, pixelofpacy);
+
             let movepac = Pac_Man.update_pac();
             let moveghost[0] = Pac_Man.update_ghost0();
             if (round > 14) {
@@ -162,7 +166,7 @@ class Pac_Man{
 
             // clear old stuff
             let numofmove = 0;
-            while(numofmove < 3){
+            while(numofmove < 3) {
                 let tmp = 0;
                 if(movepac){
                     do Screen.setColor(false);
@@ -191,8 +195,8 @@ class Pac_Man{
                               do Pac_Man.draw_pac(17,138);  
                             }}}
                             do Screen.setColor(false);
-                            do Screen.drawRectangle(492, 136, 508, 152);
-                            do Screen.drawRectangle(0, 136, 16, 152);
+                            do Screen.drawRectangle(490, 136, 508, 152);
+                            do Screen.drawRectangle(0, 136, 18, 152);
                         }
                         if((pacx = 0) & (pacy = 8) & (dirofpac = 2)){
                             if(numofmove = 0){
@@ -205,8 +209,8 @@ class Pac_Man{
                               do Pac_Man.draw_pac(483, 138);  
                             }}}
                             do Screen.setColor(false);
-                            do Screen.drawRectangle(492, 136, 508, 152);
-                            do Screen.drawRectangle(0, 136, 16, 152);
+                            do Screen.drawRectangle(490, 136, 508, 152);
+                            do Screen.drawRectangle(0, 136, 18, 152);
                         }
                 }
                 let tmp = 0;
@@ -242,28 +246,33 @@ class Pac_Man{
                               do Pac_Man.draw_ghost(17,138);  
                             }}}
                             do Screen.setColor(false);
-                            do Screen.drawRectangle(492,136,508,152);
-                            do Screen.drawRectangle(0,136,16,152);
+                            do Screen.drawRectangle(490,136,508,152);
+                            do Screen.drawRectangle(0,136,18,152);
                         }
                         if((ghostx[tmp] = 0) & (ghosty[tmp] = 8) & (dirofghost[tmp] = 2)){
                             if(numofmove = 0){
-                                do Pac_Man.draw_ghost(459+35,138);
+                                do Pac_Man.draw_ghost(494,138);
                             }
                             else{if(numofmove = 1){
-                                do Pac_Man.draw_ghost(459+29,138);
+                                do Pac_Man.draw_ghost(488,138);
                             }
                             else{if(numofmove = 2){
-                              do Pac_Man.draw_ghost(459+24,138);  
+                              do Pac_Man.draw_ghost(483,138);  
                             }}}
                             do Screen.setColor(false);
-                            do Screen.drawRectangle(492,136,508,152);
-                            do Screen.drawRectangle(0,136,16,152);
+                            do Screen.drawRectangle(490,136,508,152);
+                            do Screen.drawRectangle(0,136,18,152);
                         }
                     }
-                     let tmp = tmp + 1;
+                    let tmp = tmp + 1;
                 }
-                do Sys.wait(87); // let velocity not be too fast
                 let numofmove = numofmove + 1;
+                let tick = 0;
+                while (tick < 20) {
+                    do Util.lastValidKey();
+                    let tick = tick + 1;
+                    do Sys.wait(5);
+                }
             }
             
             if(movepac){
@@ -339,7 +348,7 @@ class Pac_Man{
 
     function void nextOp() {
         var int input;
-        let input = Keyboard.keyPressed();
+        let input = Util.lastValidKey();
         if(input = 130){	//left
             let dirofpac = 2;
         }
@@ -661,7 +670,7 @@ class Pac_Man{
         var int tmp;
         var bool need_bfs;
         let tarx = pacx + pacx - ghostx[0];
-        let tarx = pacy + pacy - ghosty[0];
+        let tary = pacy + pacy - ghosty[0];
         if (tarx < 0) {
             let tarx = 0;
         }
@@ -669,10 +678,10 @@ class Pac_Man{
             let tarx = 27;
         }
         if (tary < 0) {
-            let tary = 0;
+            let tary = tary + 15;
         }
         if (tary > 14) {
-            let tary = 14;
+            let tary = tary - 15;
         }
         
         if (map[tarx + (tary * 28)] = 1) {
@@ -748,9 +757,9 @@ class Pac_Man{
         return Pac_Man.bfs_ghost(2, tarx, tary);
     }
     function boolean update_ghost3() {
-        // ghost 3: like ghost 0  | if dis > 4
+        // ghost 3: like ghost 0  | if dis > 6
         //          left and down | else
-        if ( (Math.abs(ghostx[3] - pacx) + Math.abs(ghosty[3] - pacy)) > 4) {
+        if ( (Math.abs(ghostx[3] - pacx) + Math.abs(ghosty[3] - pacy)) > 6) {
             return Pac_Man.bfs_ghost(3, pacx, pacy);
         }
         if (ghosty[3] < 14) {
